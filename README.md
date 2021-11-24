@@ -2,6 +2,8 @@
 
 ## Useful commands
 
+Gradle
+
 - Run all tests
 
   ```shell
@@ -20,10 +22,25 @@
   $ ./gradlew build
   ```
 
-- Commit, tag and push changes
+Git
+
+- Commit changes
 
   ```shell
   $ git commit -m "Add tag example"
-  $ git tag v0.1
-  $ git push --atomic origin main v0.1
   ```
+
+- Push changes to _origin_
+
+  ```shell
+  $ git push
+  ```
+
+- Tag the current commit and push to _origin_
+
+  ```shell
+  $ git tag v0.1
+  $ git push origin v0.1
+  ```
+
+  This will trigger the build pipeline and release the application.  Note that the tag needs to be unique.
