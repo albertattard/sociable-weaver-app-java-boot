@@ -19,3 +19,11 @@
   ```shell
   $ ./gradlew build
   ```
+
+- Commit, tag and push changes
+
+  ```shell
+  $ git commit -m "Add tag example"
+  $ git tag v0.1
+  $ git push --atomic origin main v0.1
+  ```

@@ -1,2 +1,10 @@
 server:
-  port : 8077
+  port: 8077
+
+app:
+  allowedOrigin: ${ALLOWED_ORIGIN:https://albertattard.github.io}
+
+logging:
+  level:
+    aa.sw: DEBUG
+    org.springframework.web: DEBUG

@@ -1,6 +1,7 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '2.6.0'
+	id "io.freefair.lombok" version "6.2.0"
+	id 'org.springframework.boot' version '2.5.6'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 }
 
@@ -10,14 +11,22 @@ java {
 	}
 }
 
+lombok {
+	getVersion().set("1.18.22");
+}
+
 repositories {
 	mavenCentral()
 }
 
 dependencies {
+	/* Properties */
+	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
 	/* Spring */
 	implementation "org.springframework.boot:spring-boot-starter-web"
 	implementation "org.springframework.boot:spring-boot-starter-actuator"
+	implementation "org.springframework.boot:spring-boot-starter-security"
 
 	/* Testing */
 	testImplementation "org.springframework.boot:spring-boot-starter-test"
