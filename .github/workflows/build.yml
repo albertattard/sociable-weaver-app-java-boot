@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build and Publish application
+    name: Build application
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
