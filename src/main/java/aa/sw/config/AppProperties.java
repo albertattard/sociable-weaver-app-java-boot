@@ -1,9 +1,7 @@
-package aa.sw;
+package aa.sw.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.io.File;
 
 @Data
 @ConfigurationProperties(prefix = "app")

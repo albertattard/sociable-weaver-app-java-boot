@@ -1,4 +1,4 @@
-package aa.sw;
+package aa.sw.config;
 
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;

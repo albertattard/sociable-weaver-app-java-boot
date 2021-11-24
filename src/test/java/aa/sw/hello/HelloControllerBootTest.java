@@ -1,4 +1,4 @@
-package aa.sw;
+package aa.sw.hello;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +11,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class ActuatorEndpointsTest {
+class HelloControllerBootTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void returnApplicationHealthStatus() throws Exception {
-        mockMvc.perform(get("/actuator/health"))
+    void returnApplicationStatus() throws Exception {
+        mockMvc.perform(get("/hello"))
                 .andExpect(status().isOk());
     }
 }

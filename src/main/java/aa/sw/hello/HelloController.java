@@ -1,15 +1,16 @@
-package aa.sw;
+package aa.sw.hello;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.Map;
 
 @RestController
-public class DemoController {
+public class HelloController {
 
-    @GetMapping("/demo")
+    @GetMapping("/hello")
     public Map<String, String> demo() {
-        return Map.of("status", "UP");
+        return Collections.emptyMap();
     }
 }

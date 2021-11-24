@@ -7,4 +7,3 @@ app:
 logging:
   level:
     aa.sw: DEBUG
-    org.springframework.web: DEBUG
