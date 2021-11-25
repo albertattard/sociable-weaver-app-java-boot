@@ -2,7 +2,7 @@ server:
   port: 8077
 
 app:
-  allowedOrigin: ${ALLOWED_ORIGIN:https://albertattard.github.io}
+  allowedOrigin: ${ALLOWED_ORIGIN:https://sociable-weaver.github.io}
 
 logging:
   level:
