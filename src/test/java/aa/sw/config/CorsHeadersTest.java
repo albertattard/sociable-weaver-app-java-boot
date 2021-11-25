@@ -7,6 +7,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static java.util.Objects.requireNonNull;
@@ -36,8 +37,10 @@ class CorsHeadersTest {
         final ResponseEntity<String> response = sendRequest(entity);
 
         /* Then */
-        final HttpHeaders headers = response.getHeaders();
-        assertThat(headers.getAccessControlAllowOrigin())
+        assertThat(response.getStatusCode())
+                .describedAs("The response should be OK")
+                .isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().getAccessControlAllowOrigin())
                 .describedAs("The Access-Control-Allow-Origin header should be set")
                 .isEqualTo(properties.getAllowedOrigin());
     }
@@ -52,8 +55,10 @@ class CorsHeadersTest {
         final ResponseEntity<String> response = sendRequest(entity);
 
         /* Then */
-        final HttpHeaders headers = response.getHeaders();
-        assertThat(headers.getAccessControlAllowOrigin())
+        assertThat(response.getStatusCode())
+                .describedAs("The response should be FORBIDDEN as the origin does not match")
+                .isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getHeaders().getAccessControlAllowOrigin())
                 .describedAs("The Access-Control-Allow-Origin header should not be set")
                 .isNull();
     }
@@ -67,8 +72,10 @@ class CorsHeadersTest {
         final ResponseEntity<String> response = sendRequest(entity);
 
         /* Then */
-        final HttpHeaders headers = response.getHeaders();
-        assertThat(headers.getAccessControlAllowOrigin())
+        assertThat(response.getStatusCode())
+                .describedAs("The response should be OK as the origin is missing")
+                .isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().getAccessControlAllowOrigin())
                 .describedAs("The Access-Control-Allow-Origin header should not be set")
                 .isNull();
     }
@@ -76,7 +83,7 @@ class CorsHeadersTest {
     private ResponseEntity<String> sendRequest(final HttpEntity<?> entity) {
         requireNonNull(entity);
 
-        return restTemplate.exchange("/demo", HttpMethod.GET, entity, String.class);
+        return restTemplate.exchange("/hello", HttpMethod.GET, entity, String.class);
     }
 
     private HttpEntity<String> createEntityWithOrigin(final String origin) {

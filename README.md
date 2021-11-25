@@ -13,8 +13,10 @@ Gradle
 - Run the application locally, ideal for development
 
   ```shell
-  $ ./gradlew bootRun
+  $ ALLOWED_ORIGIN=http://localhost:8080 ./gradlew bootRun
   ```
+
+  Note that by default the app accepts requests from: `https://sociable-weaver.github.io`. 
 
 - Build the application for production
 
