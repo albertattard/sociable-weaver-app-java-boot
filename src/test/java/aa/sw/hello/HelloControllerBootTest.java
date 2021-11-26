@@ -9,16 +9,22 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
 @AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class HelloControllerBootTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void returnApplicationStatus() throws Exception {
+    void returnApplicationStatusOldPath() throws Exception {
         mockMvc.perform(get("/hello"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void returnApplicationStatus() throws Exception {
+        mockMvc.perform(get("/api/hello"))
                 .andExpect(status().isOk());
     }
 }
