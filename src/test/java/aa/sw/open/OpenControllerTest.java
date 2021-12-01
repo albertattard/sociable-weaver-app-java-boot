@@ -24,6 +24,7 @@ import java.util.Map;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,7 +43,7 @@ class OpenControllerTest {
     void returnBookWhenFolderExistsAndValid() throws Exception {
         /* Given */
         final Path path = Path.of("somewhere");
-        final Map<String, Object> requestBody = Map.of("openFromFolder", path.toString());
+        final Map<String, String> params = Map.of("path", path.toString());
         final OpenValue book = OpenValue.builder()
                 .title("Test Book")
                 .description("Test Description")
@@ -53,7 +54,7 @@ class OpenControllerTest {
         when(openService.openLocal(path)).thenReturn(Result.value(book));
 
         /* When */
-        final ResultActions result = postJson("/api/open-local", requestBody);
+        final ResultActions result = makeOpenLocalRequest(params);
 
         /* Then */
         result.andExpect(status().isOk())
@@ -73,11 +74,11 @@ class OpenControllerTest {
     void returnClientErrorWhenFolderDoesNotExists() throws Exception {
         /* Given */
         final Path path = Path.of("somewhere");
-        final Map<String, Object> requestBody = Map.of("openFromFolder", path.toString());
+        final Map<String, String> params = Map.of("path", path.toString());
         when(openService.openLocal(path)).thenReturn(Result.error(new FileNotFoundException()));
 
         /* When */
-        final ResultActions result = postJson("/api/open-local", requestBody);
+        final ResultActions result = makeOpenLocalRequest(params);
 
         /* Then */
         result.andExpect(status().isUnprocessableEntity())
@@ -88,15 +89,26 @@ class OpenControllerTest {
     void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
         /* Given */
         final Path path = Path.of("somewhere");
-        final Map<String, Object> requestBody = Map.of("openFromFolder", path.toString());
+        final Map<String, String> params = Map.of("path", path.toString());
         when(openService.openLocal(path)).thenReturn(Result.error(new Exception()));
 
         /* When */
-        final ResultActions result = postJson("/api/open-local", requestBody);
+        final ResultActions result = makeOpenLocalRequest(params);
 
         /* Then */
         result.andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("message", is("Encountered an unexpected error")));
+    }
+
+    private ResultActions makeOpenLocalRequest(final Map<String, String> params) throws Exception {
+        return mockMvc.perform(createGetRequest("/api/open-local", params));
+    }
+
+    /* TODO: Move this method into a more generic place */
+    private MockHttpServletRequestBuilder createGetRequest(final String path, final Map<String, String> params) {
+        final MockHttpServletRequestBuilder builder = get(path);
+        params.forEach(builder::param);
+        return builder;
     }
 
     /* TODO: Move this method into a more generic place */
