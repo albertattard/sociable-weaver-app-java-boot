@@ -17,12 +17,6 @@ class HelloControllerBootTest {
     private MockMvc mockMvc;
 
     @Test
-    void returnApplicationStatusOldPath() throws Exception {
-        mockMvc.perform(get("/hello"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
     void returnApplicationStatus() throws Exception {
         mockMvc.perform(get("/api/hello"))
                 .andExpect(status().isOk());

@@ -9,7 +9,7 @@ import java.util.Map;
 @RestController
 public class HelloController {
 
-    @GetMapping({ "/hello", "/api/hello" })
+    @GetMapping({ "/api/hello" })
     public Map<String, String> demo() {
         return Collections.emptyMap();
     }

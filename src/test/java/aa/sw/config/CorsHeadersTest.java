@@ -83,7 +83,7 @@ class CorsHeadersTest {
     private ResponseEntity<String> sendRequest(final HttpEntity<?> entity) {
         requireNonNull(entity);
 
-        return restTemplate.exchange("/hello", HttpMethod.GET, entity, String.class);
+        return restTemplate.exchange("/api/hello", HttpMethod.GET, entity, String.class);
     }
 
     private HttpEntity<String> createEntityWithOrigin(final String origin) {
