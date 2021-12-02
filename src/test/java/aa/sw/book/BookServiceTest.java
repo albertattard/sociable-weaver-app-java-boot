@@ -1,6 +1,5 @@
 package aa.sw.book;
 
-import aa.sw.config.JacksonConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class BookServiceTest {
 
-    private final ObjectMapper mapper = new JacksonConfiguration().createObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
     private final BookService service = new BookService(mapper);
 
     @Nested
@@ -46,12 +45,12 @@ class BookServiceTest {
                     .isEqualTo(Result.value(Chapter.builder()
                             .entry(Chapter.Entry.builder()
                                     .type("chapter")
-                                    .id("3a50daae-ab81-426f-a118-b505e7eecb49")
+                                    .id(UUID.fromString("3a50daae-ab81-426f-a118-b505e7eecb49"))
                                     .parameters(List.of("Prologue"))
                                     .build())
                             .entry(Chapter.Entry.builder()
                                     .type("markdown")
-                                    .id("483214f8-fc66-4a3a-b8dc-26401ac6a608")
+                                    .id(UUID.fromString("483214f8-fc66-4a3a-b8dc-26401ac6a608"))
                                     .parameters(List.of("We make mistakes, and we make more mistakes, and some more, and that's how we learn.")).build())
                             .build()));
         }
