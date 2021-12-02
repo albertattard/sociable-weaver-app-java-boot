@@ -1,4 +1,4 @@
-package aa.sw.open;
+package aa.sw.book;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -31,36 +31,34 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class OpenControllerTest {
+class BookControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private OpenService openService;
+    private BookService service;
 
     @Test
     void returnBookWhenFolderExistsAndValid() throws Exception {
         /* Given */
         final Path path = Path.of("somewhere");
         final Map<String, String> params = Map.of("path", path.toString());
-        final OpenValue book = OpenValue.builder()
+        final Book book = Book.builder()
                 .title("Test Book")
                 .description("Test Description")
-                .path(path.toString())
                 .chapter("Chapter 1", "Test chapter 1", "chapter-1")
                 .chapter("Chapter 2", "Test chapter 2", "chapter-2")
                 .build();
-        when(openService.openLocal(path)).thenReturn(Result.value(book));
+        when(service.openBook(path)).thenReturn(Result.value(book));
 
         /* When */
-        final ResultActions result = makeOpenLocalRequest(params);
+        final ResultActions result = makeOpenBookRequest(params);
 
         /* Then */
         result.andExpect(status().isOk())
                 .andExpect(jsonPath("title", is("Test Book")))
                 .andExpect(jsonPath("description", is("Test Description")))
-                .andExpect(jsonPath("path", is(path.toString())))
                 .andExpect(jsonPath("chapters", hasSize(2)))
                 .andExpect(jsonPath("chapters[0].title", is("Chapter 1")))
                 .andExpect(jsonPath("chapters[0].description", is("Test chapter 1")))
@@ -75,10 +73,10 @@ class OpenControllerTest {
         /* Given */
         final Path path = Path.of("somewhere");
         final Map<String, String> params = Map.of("path", path.toString());
-        when(openService.openLocal(path)).thenReturn(Result.error(new FileNotFoundException()));
+        when(service.openBook(path)).thenReturn(Result.error(new FileNotFoundException()));
 
         /* When */
-        final ResultActions result = makeOpenLocalRequest(params);
+        final ResultActions result = makeOpenBookRequest(params);
 
         /* Then */
         result.andExpect(status().isUnprocessableEntity())
@@ -90,18 +88,18 @@ class OpenControllerTest {
         /* Given */
         final Path path = Path.of("somewhere");
         final Map<String, String> params = Map.of("path", path.toString());
-        when(openService.openLocal(path)).thenReturn(Result.error(new Exception()));
+        when(service.openBook(path)).thenReturn(Result.error(new Exception()));
 
         /* When */
-        final ResultActions result = makeOpenLocalRequest(params);
+        final ResultActions result = makeOpenBookRequest(params);
 
         /* Then */
         result.andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("message", is("Encountered an unexpected error")));
     }
 
-    private ResultActions makeOpenLocalRequest(final Map<String, String> params) throws Exception {
-        return mockMvc.perform(createGetRequest("/api/open-local", params));
+    private ResultActions makeOpenBookRequest(final Map<String, String> params) throws Exception {
+        return mockMvc.perform(createGetRequest("/api/book/open", params));
     }
 
     /* TODO: Move this method into a more generic place */

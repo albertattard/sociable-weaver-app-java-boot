@@ -1,4 +1,4 @@
-package aa.sw.open;
+package aa.sw.book;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,15 +12,15 @@ import java.nio.file.Path;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/book")
 @AllArgsConstructor
-public class OpenController {
+public class BookController {
 
-    private final OpenService service;
+    private final BookService service;
 
-    @GetMapping("/open-local")
+    @GetMapping("/open")
     public ResponseEntity<?> openLocal(@RequestParam("path") final Path path) {
-        return service.openLocal(path)
+        return service.openBook(path)
                 .map(ResponseEntity::ok, this::toErrorResponse);
     }
 
