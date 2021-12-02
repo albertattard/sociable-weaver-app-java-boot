@@ -11,7 +11,7 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 @JsonDeserialize(builder = Book.BookBuilder.class)
 public class Book {
 

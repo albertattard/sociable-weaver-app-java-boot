@@ -2,29 +2,58 @@ package aa.sw.book;
 
 import aa.sw.config.JacksonConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BookServiceTest {
 
-    @Test
-    void openBook() {
-        final ObjectMapper mapper = new JacksonConfiguration().createObjectMapper();
-        final BookService service = new BookService(mapper);
+    private final ObjectMapper mapper = new JacksonConfiguration().createObjectMapper();
+    private final BookService service = new BookService(mapper);
 
-        final Result<Book> book = service.openBook(Path.of("somewhere"));
+    @Nested
+    class OpenBookTest {
 
-        assertThat(book)
-                .describedAs("")
-                .isEqualTo(Result.value(Book.builder()
-                        .title("Programming")
-                        .description("A book about programming")
-                        .chapter("Prologue", "The prologue", "00-prologue.json")
-                        .chapter("Hello World", "Automation", "01-hello-world.json")
-                        .chapter("Broken Links", "Test Driven Development", "02-broken-links.json")
-                        .build()));
+        @Test
+        void openBook() {
+
+            final Result<Book> book = service.openBook(Path.of("path-to-book"));
+
+            assertThat(book)
+                    .isEqualTo(Result.value(Book.builder()
+                            .title("Programming")
+                            .description("A book about programming")
+                            .chapter("Prologue", "The prologue", "00-prologue.json")
+                            .chapter("Hello World", "Automation", "01-hello-world.json")
+                            .chapter("Broken Links", "Test Driven Development", "02-broken-links.json")
+                            .build()));
+        }
+    }
+
+    @Nested
+    class ReadChapterTest {
+
+        @Test
+        void readChapter() {
+            final Result<Chapter> chapter = service.readChapter(Path.of("path-to-chapter"));
+
+            assertThat(chapter)
+                    .isEqualTo(Result.value(Chapter.builder()
+                            .entry(Chapter.Entry.builder()
+                                    .type("chapter")
+                                    .id("3a50daae-ab81-426f-a118-b505e7eecb49")
+                                    .parameters(List.of("Prologue"))
+                                    .build())
+                            .entry(Chapter.Entry.builder()
+                                    .type("markdown")
+                                    .id("483214f8-fc66-4a3a-b8dc-26401ac6a608")
+                                    .parameters(List.of("We make mistakes, and we make more mistakes, and some more, and that's how we learn.")).build())
+                            .build()));
+        }
     }
 }

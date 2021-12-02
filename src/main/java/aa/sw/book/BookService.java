@@ -17,6 +17,14 @@ public class BookService {
     public Result<Book> openBook(final Path path) {
         requireNonNull(path);
 
+        /* TODO: Read the book from the given path */
         return Result.of(() -> mapper.readValue(getClass().getResource("/fixtures/book.json"), Book.class));
+    }
+
+    public Result<Chapter> readChapter(final Path path) {
+        requireNonNull(path);
+
+        /* TODO: Read the chapter from the given path */
+        return Result.of(() -> mapper.readValue(getClass().getResource("/fixtures/00-prologue.json"), Chapter.class));
     }
 }

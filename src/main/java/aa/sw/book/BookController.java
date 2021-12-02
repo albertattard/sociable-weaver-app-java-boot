@@ -11,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.Map;
 
+import static java.util.Objects.requireNonNull;
+
 @RestController
 @RequestMapping("/api/book")
 @AllArgsConstructor
@@ -21,13 +23,33 @@ public class BookController {
     @GetMapping("/open")
     public ResponseEntity<?> open(@RequestParam("path") final Path path) {
         return service.openBook(path)
-                .map(ResponseEntity::ok, this::toErrorResponse);
+                .map(ResponseEntity::ok, this::createOpenErrorResponse);
     }
 
-    private ResponseEntity<?> toErrorResponse(final Throwable e) {
+    @GetMapping("/read-chapter")
+    public ResponseEntity<?> readChapter(@RequestParam("path") final Path path) {
+        return service.readChapter(path)
+                .map(ResponseEntity::ok, this::createReadChapterErrorResponse);
+    }
+
+    private ResponseEntity<?> createOpenErrorResponse(final Throwable e) {
         final String message = e instanceof FileNotFoundException
                 ? "Folder not found"
                 : "Encountered an unexpected error";
+
+        return createUnprocessableEntityResponse(message);
+    }
+
+    private ResponseEntity<?> createReadChapterErrorResponse(final Throwable e) {
+        final String message = e instanceof FileNotFoundException
+                ? "Chapter not found"
+                : "Encountered an unexpected error";
+
+        return createUnprocessableEntityResponse(message);
+    }
+
+    private ResponseEntity<Map<String, String>> createUnprocessableEntityResponse(final String message) {
+        requireNonNull(message);
 
         return ResponseEntity.unprocessableEntity()
                 .body(Map.of("message", message));

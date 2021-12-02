@@ -27,6 +27,7 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,7 +47,7 @@ class BookControllerTest {
         @Test
         void returnBookWhenFolderExistsAndValid() throws Exception {
             /* Given */
-            final Path path = Path.of("somewhere");
+            final Path path = Path.of("path-to-book");
             final Map<String, String> params = Map.of("path", path.toString());
             final Book book = Book.builder()
                     .title("Test Book")
@@ -75,7 +76,7 @@ class BookControllerTest {
         @Test
         void returnClientErrorWhenFolderDoesNotExists() throws Exception {
             /* Given */
-            final Path path = Path.of("somewhere");
+            final Path path = Path.of("path-to-book");
             final Map<String, String> params = Map.of("path", path.toString());
             when(service.openBook(path)).thenReturn(Result.error(new FileNotFoundException()));
 
@@ -90,7 +91,7 @@ class BookControllerTest {
         @Test
         void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
             /* Given */
-            final Path path = Path.of("somewhere");
+            final Path path = Path.of("path-to-book");
             final Map<String, String> params = Map.of("path", path.toString());
             when(service.openBook(path)).thenReturn(Result.error(new Exception()));
 
@@ -104,6 +105,63 @@ class BookControllerTest {
 
         private ResultActions makeOpenBookRequest(final Map<String, String> params) throws Exception {
             return mockMvc.perform(createGetRequest("/api/book/open", params));
+        }
+    }
+
+    @Nested
+    class ReadChapterTest {
+
+        @Test
+        void returnChapterWhenExistsAndValid() throws Exception {
+            /* Given */
+            final Path path = Path.of("path-to-chapter-1");
+            final Map<String, String> params = Map.of("path", path.toString());
+            final Chapter chapter = Chapter.builder()
+                    .entry(Chapter.Entry.builder().build())
+                    .entry(Chapter.Entry.builder().build())
+                    .build();
+            when(service.readChapter(path)).thenReturn(Result.value(chapter));
+
+            /* When */
+            final ResultActions result = makeReadChapterRequest(params);
+
+            /* Then */
+            result.andExpect(status().isOk())
+                    .andExpect(jsonPath("entries", hasSize(2)));
+        }
+
+        @Test
+        void returnClientErrorWhenChapterDoesNotExists() throws Exception {
+            /* Given */
+            final Path path = Path.of("path-to-chapter-1");
+            final Map<String, String> params = Map.of("path", path.toString());
+            when(service.readChapter(path)).thenReturn(Result.error(new FileNotFoundException()));
+
+            /* When */
+            final ResultActions result = makeReadChapterRequest(params);
+
+            /* Then */
+            result.andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("message", is("Chapter not found")));
+        }
+
+        @Test
+        void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
+            /* Given */
+            final Path path = Path.of("path-to-chapter-1");
+            final Map<String, String> params = Map.of("path", path.toString());
+            when(service.readChapter(path)).thenReturn(Result.error(new Exception()));
+
+            /* When */
+            final ResultActions result = makeReadChapterRequest(params);
+
+            /* Then */
+            result.andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("message", is("Encountered an unexpected error")));
+        }
+
+        private ResultActions makeReadChapterRequest(final Map<String, String> params) throws Exception {
+            return mockMvc.perform(createGetRequest("/api/book/read-chapter", params));
         }
     }
 
