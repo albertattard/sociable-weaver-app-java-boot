@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -39,67 +40,71 @@ class BookControllerTest {
     @MockBean
     private BookService service;
 
-    @Test
-    void returnBookWhenFolderExistsAndValid() throws Exception {
-        /* Given */
-        final Path path = Path.of("somewhere");
-        final Map<String, String> params = Map.of("path", path.toString());
-        final Book book = Book.builder()
-                .title("Test Book")
-                .description("Test Description")
-                .chapter("Chapter 1", "Test chapter 1", "chapter-1")
-                .chapter("Chapter 2", "Test chapter 2", "chapter-2")
-                .build();
-        when(service.openBook(path)).thenReturn(Result.value(book));
+    @Nested
+    class OpenBookTest {
 
-        /* When */
-        final ResultActions result = makeOpenBookRequest(params);
+        @Test
+        void returnBookWhenFolderExistsAndValid() throws Exception {
+            /* Given */
+            final Path path = Path.of("somewhere");
+            final Map<String, String> params = Map.of("path", path.toString());
+            final Book book = Book.builder()
+                    .title("Test Book")
+                    .description("Test Description")
+                    .chapter("Chapter 1", "Test chapter 1", "chapter-1")
+                    .chapter("Chapter 2", "Test chapter 2", "chapter-2")
+                    .build();
+            when(service.openBook(path)).thenReturn(Result.value(book));
 
-        /* Then */
-        result.andExpect(status().isOk())
-                .andExpect(jsonPath("title", is("Test Book")))
-                .andExpect(jsonPath("description", is("Test Description")))
-                .andExpect(jsonPath("chapters", hasSize(2)))
-                .andExpect(jsonPath("chapters[0].title", is("Chapter 1")))
-                .andExpect(jsonPath("chapters[0].description", is("Test chapter 1")))
-                .andExpect(jsonPath("chapters[0].path", is("chapter-1")))
-                .andExpect(jsonPath("chapters[1].title", is("Chapter 2")))
-                .andExpect(jsonPath("chapters[1].description", is("Test chapter 2")))
-                .andExpect(jsonPath("chapters[1].path", is("chapter-2")));
-    }
+            /* When */
+            final ResultActions result = makeOpenBookRequest(params);
 
-    @Test
-    void returnClientErrorWhenFolderDoesNotExists() throws Exception {
-        /* Given */
-        final Path path = Path.of("somewhere");
-        final Map<String, String> params = Map.of("path", path.toString());
-        when(service.openBook(path)).thenReturn(Result.error(new FileNotFoundException()));
+            /* Then */
+            result.andExpect(status().isOk())
+                    .andExpect(jsonPath("title", is("Test Book")))
+                    .andExpect(jsonPath("description", is("Test Description")))
+                    .andExpect(jsonPath("chapters", hasSize(2)))
+                    .andExpect(jsonPath("chapters[0].title", is("Chapter 1")))
+                    .andExpect(jsonPath("chapters[0].description", is("Test chapter 1")))
+                    .andExpect(jsonPath("chapters[0].path", is("chapter-1")))
+                    .andExpect(jsonPath("chapters[1].title", is("Chapter 2")))
+                    .andExpect(jsonPath("chapters[1].description", is("Test chapter 2")))
+                    .andExpect(jsonPath("chapters[1].path", is("chapter-2")));
+        }
 
-        /* When */
-        final ResultActions result = makeOpenBookRequest(params);
+        @Test
+        void returnClientErrorWhenFolderDoesNotExists() throws Exception {
+            /* Given */
+            final Path path = Path.of("somewhere");
+            final Map<String, String> params = Map.of("path", path.toString());
+            when(service.openBook(path)).thenReturn(Result.error(new FileNotFoundException()));
 
-        /* Then */
-        result.andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("message", is("Folder not found")));
-    }
+            /* When */
+            final ResultActions result = makeOpenBookRequest(params);
 
-    @Test
-    void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
-        /* Given */
-        final Path path = Path.of("somewhere");
-        final Map<String, String> params = Map.of("path", path.toString());
-        when(service.openBook(path)).thenReturn(Result.error(new Exception()));
+            /* Then */
+            result.andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("message", is("Folder not found")));
+        }
 
-        /* When */
-        final ResultActions result = makeOpenBookRequest(params);
+        @Test
+        void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
+            /* Given */
+            final Path path = Path.of("somewhere");
+            final Map<String, String> params = Map.of("path", path.toString());
+            when(service.openBook(path)).thenReturn(Result.error(new Exception()));
 
-        /* Then */
-        result.andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("message", is("Encountered an unexpected error")));
-    }
+            /* When */
+            final ResultActions result = makeOpenBookRequest(params);
 
-    private ResultActions makeOpenBookRequest(final Map<String, String> params) throws Exception {
-        return mockMvc.perform(createGetRequest("/api/book/open", params));
+            /* Then */
+            result.andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("message", is("Encountered an unexpected error")));
+        }
+
+        private ResultActions makeOpenBookRequest(final Map<String, String> params) throws Exception {
+            return mockMvc.perform(createGetRequest("/api/book/open", params));
+        }
     }
 
     /* TODO: Move this method into a more generic place */
@@ -107,11 +112,6 @@ class BookControllerTest {
         final MockHttpServletRequestBuilder builder = get(path);
         params.forEach(builder::param);
         return builder;
-    }
-
-    /* TODO: Move this method into a more generic place */
-    private ResultActions postJson(final String path, final Map<String, Object> body) throws Exception {
-        return mockMvc.perform(createPostJsonRequest(path, body));
     }
 
     /* TODO: Move this method into a more generic place */

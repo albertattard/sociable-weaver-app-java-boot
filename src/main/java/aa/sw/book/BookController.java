@@ -19,7 +19,7 @@ public class BookController {
     private final BookService service;
 
     @GetMapping("/open")
-    public ResponseEntity<?> openLocal(@RequestParam("path") final Path path) {
+    public ResponseEntity<?> open(@RequestParam("path") final Path path) {
         return service.openBook(path)
                 .map(ResponseEntity::ok, this::toErrorResponse);
     }
