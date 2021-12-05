@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static java.util.Objects.requireNonNull;
@@ -17,8 +18,11 @@ public class BookService {
     public Result<Book> openBook(final Path path) {
         requireNonNull(path);
 
-        /* TODO: Read the book from the given path */
-        return Result.of(() -> mapper.readValue(getClass().getResource("/fixtures/book.json"), Book.class));
+        final Path file = Files.isDirectory(path)
+                ? path.resolve("book.json")
+                : path;
+
+        return Result.of(() -> mapper.readValue(file.toFile(), Book.class));
     }
 
     public Result<Chapter> readChapter(final Path path) {

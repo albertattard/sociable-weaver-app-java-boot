@@ -19,18 +19,29 @@ class BookServiceTest {
     class OpenBookTest {
 
         @Test
-        void openBook() {
-
-            final Result<Book> book = service.openBook(Path.of("path-to-book"));
+        void openSpecificBook() {
+            final Result<Book> book = service.openBook(Path.of("src/test/resources/fixtures/books/book.json"));
 
             assertThat(book)
-                    .isEqualTo(Result.value(Book.builder()
-                            .title("Programming")
-                            .description("A book about programming")
-                            .chapter("Prologue", "The prologue", "00-prologue.json")
-                            .chapter("Hello World", "Automation", "01-hello-world.json")
-                            .chapter("Broken Links", "Test Driven Development", "02-broken-links.json")
-                            .build()));
+                    .isEqualTo(createBookResult());
+        }
+
+        @Test
+        void openBookFoundInFolder() {
+            final Result<Book> book = service.openBook(Path.of("src/test/resources/fixtures/books"));
+
+            assertThat(book)
+                    .isEqualTo(createBookResult());
+        }
+
+        private static Result<Book> createBookResult() {
+            return Result.value(Book.builder()
+                    .title("Programming")
+                    .description("A book about programming")
+                    .chapter("Prologue", "The prologue", "00-prologue.json")
+                    .chapter("Hello World", "Automation", "01-hello-world.json")
+                    .chapter("Broken Links", "Test Driven Development", "02-broken-links.json")
+                    .build());
         }
     }
 
@@ -51,7 +62,8 @@ class BookServiceTest {
                             .entry(Chapter.Entry.builder()
                                     .type("markdown")
                                     .id(UUID.fromString("483214f8-fc66-4a3a-b8dc-26401ac6a608"))
-                                    .parameters(List.of("We make mistakes, and we make more mistakes, and some more, and that's how we learn.")).build())
+                                    .parameters(List.of("We make mistakes, and we make more mistakes, and some more, " +
+                                            "and that's how we learn.")).build())
                             .build()));
         }
     }
