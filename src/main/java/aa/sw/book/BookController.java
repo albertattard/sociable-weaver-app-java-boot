@@ -21,20 +21,21 @@ public class BookController {
     private final BookService service;
 
     @GetMapping("/open")
-    public ResponseEntity<?> open(@RequestParam("path") final Path path) {
-        return service.openBook(path)
+    public ResponseEntity<?> open(@RequestParam("bookPath") final Path bookPath) {
+        return service.openBook(bookPath)
                 .map(ResponseEntity::ok, this::createOpenErrorResponse);
     }
 
     @GetMapping("/read-chapter")
-    public ResponseEntity<?> readChapter(@RequestParam("path") final Path path) {
-        return service.readChapter(path)
+    public ResponseEntity<?> readChapter(@RequestParam("bookPath") final Path bookPath,
+                                         @RequestParam("chapterPath") final Path chapterPath) {
+        return service.readChapter(bookPath, chapterPath)
                 .map(ResponseEntity::ok, this::createReadChapterErrorResponse);
     }
 
     private ResponseEntity<?> createOpenErrorResponse(final Throwable e) {
         final String message = e instanceof FileNotFoundException
-                ? "Folder not found"
+                ? "Book not found"
                 : "Encountered an unexpected error";
 
         return createUnprocessableEntityResponse(message);

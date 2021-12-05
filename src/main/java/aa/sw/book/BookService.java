@@ -15,20 +15,29 @@ public class BookService {
 
     private final ObjectMapper mapper;
 
-    public Result<Book> openBook(final Path path) {
-        requireNonNull(path);
+    public Result<Book> openBook(final Path bookPath) {
+        requireNonNull(bookPath);
 
-        final Path file = Files.isDirectory(path)
-                ? path.resolve("book.json")
-                : path;
-
-        return Result.of(() -> mapper.readValue(file.toFile(), Book.class));
+        return Result.of(() -> {
+            final Path file = Files.isDirectory(bookPath)
+                    ? bookPath.resolve("book.json")
+                    : bookPath;
+            return mapper.readValue(file.toFile(), Book.class);
+        });
     }
 
-    public Result<Chapter> readChapter(final Path path) {
-        requireNonNull(path);
+    public Result<Chapter> readChapter(final Path bookPath, final Path chapterPath) {
+        requireNonNull(bookPath);
+        requireNonNull(chapterPath);
 
-        /* TODO: Read the chapter from the given path */
-        return Result.of(() -> mapper.readValue(getClass().getResource("/fixtures/00-prologue.json"), Chapter.class));
+        return Result.of(() -> {
+            final Path directory = Files.isDirectory(bookPath)
+                    ? bookPath
+                    : bookPath.getParent();
+
+            final Path file = directory.resolve(chapterPath);
+
+            return mapper.readValue(file.toFile(), Chapter.class);
+        });
     }
 }

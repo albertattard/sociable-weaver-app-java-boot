@@ -46,15 +46,15 @@ class BookControllerTest {
         @Test
         void returnBookWhenFolderExistsAndValid() throws Exception {
             /* Given */
-            final Path path = Path.of("path-to-book");
-            final Map<String, String> params = Map.of("path", path.toString());
+            final Path bookPath = Path.of("path-to-book");
+            final Map<String, ?> params = Map.of("bookPath", bookPath);
             final Book book = Book.builder()
                     .title("Test Book")
                     .description("Test Description")
                     .chapter("Chapter 1", "Test chapter 1", "chapter-1")
                     .chapter("Chapter 2", "Test chapter 2", "chapter-2")
                     .build();
-            when(service.openBook(path)).thenReturn(Result.value(book));
+            when(service.openBook(bookPath)).thenReturn(Result.value(book));
 
             /* When */
             final ResultActions result = makeOpenBookRequest(params);
@@ -75,24 +75,24 @@ class BookControllerTest {
         @Test
         void returnClientErrorWhenFolderDoesNotExists() throws Exception {
             /* Given */
-            final Path path = Path.of("path-to-book");
-            final Map<String, String> params = Map.of("path", path.toString());
-            when(service.openBook(path)).thenReturn(Result.error(new FileNotFoundException()));
+            final Path bookPath = Path.of("path-to-book");
+            final Map<String, ?> params = Map.of("bookPath", bookPath);
+            when(service.openBook(bookPath)).thenReturn(Result.error(new FileNotFoundException()));
 
             /* When */
             final ResultActions result = makeOpenBookRequest(params);
 
             /* Then */
             result.andExpect(status().isUnprocessableEntity())
-                    .andExpect(jsonPath("message", is("Folder not found")));
+                    .andExpect(jsonPath("message", is("Book not found")));
         }
 
         @Test
         void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
             /* Given */
-            final Path path = Path.of("path-to-book");
-            final Map<String, String> params = Map.of("path", path.toString());
-            when(service.openBook(path)).thenReturn(Result.error(new Exception()));
+            final Path bookPath = Path.of("path-to-book");
+            final Map<String, ?> params = Map.of("bookPath", bookPath);
+            when(service.openBook(bookPath)).thenReturn(Result.error(new Exception()));
 
             /* When */
             final ResultActions result = makeOpenBookRequest(params);
@@ -102,7 +102,7 @@ class BookControllerTest {
                     .andExpect(jsonPath("message", is("Encountered an unexpected error")));
         }
 
-        private ResultActions makeOpenBookRequest(final Map<String, String> params) throws Exception {
+        private ResultActions makeOpenBookRequest(final Map<String, ?> params) throws Exception {
             return mockMvc.perform(createGetRequest("/api/book/open", params));
         }
     }
@@ -113,13 +113,14 @@ class BookControllerTest {
         @Test
         void returnChapterWhenExistsAndValid() throws Exception {
             /* Given */
-            final Path path = Path.of("path-to-chapter-1");
-            final Map<String, String> params = Map.of("path", path.toString());
+            final Path bookPath = Path.of("src/test/resources/fixtures/books");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final Map<String, ?> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             final Chapter chapter = Chapter.builder()
                     .entry(Chapter.Entry.builder().build())
                     .entry(Chapter.Entry.builder().build())
                     .build();
-            when(service.readChapter(path)).thenReturn(Result.value(chapter));
+            when(service.readChapter(bookPath, chapterPath)).thenReturn(Result.value(chapter));
 
             /* When */
             final ResultActions result = makeReadChapterRequest(params);
@@ -132,9 +133,10 @@ class BookControllerTest {
         @Test
         void returnClientErrorWhenChapterDoesNotExists() throws Exception {
             /* Given */
-            final Path path = Path.of("path-to-chapter-1");
-            final Map<String, String> params = Map.of("path", path.toString());
-            when(service.readChapter(path)).thenReturn(Result.error(new FileNotFoundException()));
+            final Path bookPath = Path.of("src/test/resources/fixtures/books");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final Map<String, ?> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
+            when(service.readChapter(bookPath, chapterPath)).thenReturn(Result.error(new FileNotFoundException()));
 
             /* When */
             final ResultActions result = makeReadChapterRequest(params);
@@ -147,9 +149,10 @@ class BookControllerTest {
         @Test
         void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
             /* Given */
-            final Path path = Path.of("path-to-chapter-1");
-            final Map<String, String> params = Map.of("path", path.toString());
-            when(service.readChapter(path)).thenReturn(Result.error(new Exception()));
+            final Path bookPath = Path.of("src/test/resources/fixtures/books");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final Map<String, ?> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
+            when(service.readChapter(bookPath, chapterPath)).thenReturn(Result.error(new Exception()));
 
             /* When */
             final ResultActions result = makeReadChapterRequest(params);
@@ -159,15 +162,15 @@ class BookControllerTest {
                     .andExpect(jsonPath("message", is("Encountered an unexpected error")));
         }
 
-        private ResultActions makeReadChapterRequest(final Map<String, String> params) throws Exception {
+        private ResultActions makeReadChapterRequest(final Map<String, ?> params) throws Exception {
             return mockMvc.perform(createGetRequest("/api/book/read-chapter", params));
         }
     }
 
     /* TODO: Move this method into a more generic place */
-    private MockHttpServletRequestBuilder createGetRequest(final String path, final Map<String, String> params) {
+    private MockHttpServletRequestBuilder createGetRequest(final String path, final Map<String, ?> params) {
         final MockHttpServletRequestBuilder builder = get(path);
-        params.forEach(builder::param);
+        params.forEach((k, v) -> builder.param(k, v.toString()));
         return builder;
     }
 

@@ -15,12 +15,14 @@ class BookServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final BookService service = new BookService(mapper);
 
+    private static final Path BOOKS_PATH = Path.of("src/test/resources/fixtures/books");
+
     @Nested
     class OpenBookTest {
 
         @Test
         void openSpecificBook() {
-            final Result<Book> book = service.openBook(Path.of("src/test/resources/fixtures/books/book.json"));
+            final Result<Book> book = service.openBook(BOOKS_PATH.resolve("book.json"));
 
             assertThat(book)
                     .isEqualTo(createBookResult());
@@ -28,7 +30,7 @@ class BookServiceTest {
 
         @Test
         void openBookFoundInFolder() {
-            final Result<Book> book = service.openBook(Path.of("src/test/resources/fixtures/books"));
+            final Result<Book> book = service.openBook(BOOKS_PATH);
 
             assertThat(book)
                     .isEqualTo(createBookResult());
@@ -50,7 +52,7 @@ class BookServiceTest {
 
         @Test
         void readChapter() {
-            final Result<Chapter> chapter = service.readChapter(Path.of("path-to-chapter"));
+            final Result<Chapter> chapter = service.readChapter(BOOKS_PATH, Path.of("00-prologue.json"));
 
             assertThat(chapter)
                     .isEqualTo(Result.value(Chapter.builder()
