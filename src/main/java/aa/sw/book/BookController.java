@@ -1,6 +1,8 @@
 package aa.sw.book;
 
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +20,8 @@ import static java.util.Objects.requireNonNull;
 @AllArgsConstructor
 public class BookController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BookController.class);
+
     private final BookService service;
 
     @GetMapping("/open")
@@ -34,6 +38,8 @@ public class BookController {
     }
 
     private ResponseEntity<?> createOpenErrorResponse(final Throwable e) {
+        LOGGER.error("Failed to open book", e);
+
         final String message = e instanceof FileNotFoundException
                 ? "Book not found"
                 : "Encountered an unexpected error";
@@ -42,6 +48,8 @@ public class BookController {
     }
 
     private ResponseEntity<?> createReadChapterErrorResponse(final Throwable e) {
+        LOGGER.error("Failed to read chapter", e);
+
         final String message = e instanceof FileNotFoundException
                 ? "Chapter not found"
                 : "Encountered an unexpected error";
