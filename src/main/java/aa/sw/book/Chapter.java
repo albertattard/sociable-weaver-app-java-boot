@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
@@ -53,6 +54,8 @@ public class Chapter {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Entry {
 
+        private static final Set<String> RUNNABLE_TYPES = createRunnableTypesSet();
+
         String type;
         UUID id;
         String name;
@@ -67,6 +70,15 @@ public class Chapter {
         Boolean sensitive;
         Integer expectedExitValue;
         Duration commandTimeout;
+
+        public boolean isRunnable() {
+            return RUNNABLE_TYPES.contains(type);
+        }
+
+        private static Set<String> createRunnableTypesSet() {
+            return Set.of("command", "create", "docker-tag-and-push", "download", "git-apply-patch",
+                    "git-commit-changes", "git-tag-current-commit", "replace");
+        }
 
         @JsonPOJOBuilder(withPrefix = "")
         public static class EntryBuilder { }
