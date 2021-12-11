@@ -62,6 +62,7 @@ public class Chapter {
         String workingDirectory;
         List<String> parameters;
         List<String> variables;
+        List<String> environmentVariables;
         Map<String, String> values;
         Boolean ignoreErrors;
         Boolean pushChanges;

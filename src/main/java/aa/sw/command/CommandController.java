@@ -1,5 +1,6 @@
 package aa.sw.command;
 
+import aa.sw.command.exec.CommandExecutor;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ public class CommandController {
     private final CommandExecutor code;
 
     @MessageMapping("/run")
-    public void run(final Principal principal, final Command entry) {
+    public void run(final Principal principal, final RunnableEntry entry) {
         executor.submit(() -> {
             final Consumer<String> output = createOutput(principal);
             final CommandResult commandResult = runCommand(entry, output);
@@ -35,7 +36,7 @@ public class CommandController {
         });
     }
 
-    private CommandResult runCommand(final Command entry, final Consumer<String> output) {
+    private CommandResult runCommand(final RunnableEntry entry, final Consumer<String> output) {
         try {
             return code.run(entry, output);
         } catch (final RuntimeException e) {
