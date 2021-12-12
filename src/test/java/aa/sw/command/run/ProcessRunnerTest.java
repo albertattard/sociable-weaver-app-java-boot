@@ -28,7 +28,6 @@ class ProcessRunnerTest {
     void setUp() {
         output = new BufferedOutput();
         context = CommandRunnerContext.builder()
-                .baseDirectory(createWorkingDirectory())
                 .output(output)
                 .build();
     }
@@ -42,6 +41,7 @@ class ProcessRunnerTest {
         /* When */
         final ProcessResult result = ProcessRunner.builder()
                 .command(List.of("./run"))
+                .workspace(createWorkingDirectory())
                 .context(context)
                 .build()
                 .run();
@@ -64,6 +64,7 @@ class ProcessRunnerTest {
         /* When */
         final ProcessResult result = ProcessRunner.builder()
                 .command(List.of("./run"))
+                .workspace(createWorkingDirectory())
                 .context(context)
                 .commandTimeout(Duration.ofSeconds(1))
                 .build()
@@ -92,6 +93,7 @@ class ProcessRunnerTest {
         /* When */
         final ProcessResult result = ProcessRunner.builder()
                 .command(List.of("./run"))
+                .workspace(createWorkingDirectory())
                 .context(context)
                 .build()
                 .run();
@@ -114,6 +116,7 @@ class ProcessRunnerTest {
         /* When */
         final ProcessResult result = ProcessRunner.builder()
                 .command(List.of("./run"))
+                .workspace(createWorkingDirectory())
                 .context(context)
                 .build()
                 .run();
@@ -137,6 +140,7 @@ class ProcessRunnerTest {
         /* When */
         final ProcessResult result = ProcessRunner.builder()
                 .command(List.of("./run"))
+                .workspace(createWorkingDirectory())
                 .context(context)
                 .environmentVariables(Map.of("NAME", "Albert and James"))
                 .build()
@@ -161,7 +165,7 @@ class ProcessRunnerTest {
     private void createScript(final ScriptConfiguration configuration) {
         final String bash = formatScript(configuration);
 
-        final File bashFile = new File(context.baseDirectory(), "run");
+        final File bashFile = new File(createWorkingDirectory(), "run");
         writeToFile(bash, bashFile);
         assertTrue(bashFile.setExecutable(true));
     }

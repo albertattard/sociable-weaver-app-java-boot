@@ -5,7 +5,6 @@ import aa.sw.command.RunnableEntry;
 import aa.sw.command.run.strategy.CommandExecutionStrategy;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -38,9 +37,6 @@ public class RunnableEntryRunner {
         requireNonNull(output);
 
         final CommandRunnerContext context = CommandRunnerContext.builder()
-                // TODO: read this from the RunnableEntry
-                // .baseDirectory(properties.getBaseDirectory())
-                .baseDirectory(new File("/Users/albertattard/Projects/workspace"))
                 .output(output)
                 .build();
 

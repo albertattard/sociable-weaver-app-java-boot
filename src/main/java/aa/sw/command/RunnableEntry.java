@@ -20,6 +20,7 @@ public class RunnableEntry {
     String type;
     UUID id;
     String name;
+    String workPath;
     String workingDirectory;
     List<String> parameters;
     List<String> variables;
@@ -28,8 +29,6 @@ public class RunnableEntry {
     Boolean ignoreErrors;
     Boolean pushChanges;
     Boolean dryRun;
-    Boolean visible;
-    Boolean sensitive;
     Integer expectedExitValue;
     Duration commandTimeout;
 
@@ -79,22 +78,6 @@ public class RunnableEntry {
 
     public boolean isDryRun() {
         return Boolean.TRUE.equals(dryRun);
-    }
-
-    public Optional<Boolean> getVisible() {
-        return Optional.ofNullable(visible);
-    }
-
-    public boolean isVisible() {
-        return !Boolean.FALSE.equals(visible);
-    }
-
-    public Optional<Boolean> getSensitive() {
-        return Optional.ofNullable(sensitive);
-    }
-
-    public boolean isSensitive() {
-        return !Boolean.FALSE.equals(visible);
     }
 
     public OptionalInt getExpectedExitValue() {

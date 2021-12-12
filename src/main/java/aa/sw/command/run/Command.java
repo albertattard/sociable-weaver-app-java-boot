@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +21,8 @@ import static java.util.Objects.requireNonNull;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Command {
 
+    Path workspace;
+    String workingDirectory;
     List<String> parameters;
     List<String> commandAndArgs;
 
@@ -111,6 +114,12 @@ public class Command {
         return interpolated;
     }
 
+    public Command withWorkspace(final String workspace) {
+        return toBuilder()
+                .workspace(Path.of(workspace))
+                .build();
+    }
+
     public String asString() {
         return String.join("\n", parameters);
     }
@@ -120,8 +129,14 @@ public class Command {
     }
 
     public static class CommandBuilder {
+        private Path workspace = userHomeDirectory();
+
         public Command build() {
-            return new Command(List.copyOf(parameters), List.copyOf(commandAndArgs));
+            return new Command(workspace, workingDirectory, List.copyOf(parameters), List.copyOf(commandAndArgs));
+        }
+
+        private static Path userHomeDirectory() {
+            return Path.of(System.getProperty("user.home"), "sociable-weaver/workspace");
         }
     }
 

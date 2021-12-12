@@ -3,7 +3,6 @@ package aa.sw.command.run;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.function.Consumer;
@@ -20,16 +19,10 @@ public class CommandRunnerContext {
     private static final String THIN_LINE =
             "--------------------------------------------------------------------------------";
 
-    private final File baseDirectory;
     private final Consumer<String> outputConsumer;
 
     private CommandRunnerContext(final Builder builder) {
-        this.baseDirectory = builder.baseDirectory;
         this.outputConsumer = builder.outputConsumer;
-    }
-
-    public File baseDirectory() {
-        return baseDirectory;
     }
 
     public void appendError(final String message, final Throwable error) {
@@ -89,17 +82,9 @@ public class CommandRunnerContext {
 
     public static class Builder {
 
-        private File baseDirectory = new File("~/.nestweber");
         private Consumer<String> outputConsumer = line -> { LOGGER.debug("{}", line); };
 
         private Builder() { }
-
-        public Builder baseDirectory(final File baseDirectory) {
-            requireNonNull(baseDirectory);
-
-            this.baseDirectory = baseDirectory;
-            return this;
-        }
 
         public Builder output(final Consumer<String> outputConsumer) {
             requireNonNull(outputConsumer);

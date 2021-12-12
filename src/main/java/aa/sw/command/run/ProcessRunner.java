@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +24,8 @@ public class ProcessRunner {
 
     @NonNull
     private final List<String> command;
+    @NonNull
+    private final File workspace;
     @Builder.Default
     private final Optional<String> workingDirectory = Optional.empty();
     @NonNull
@@ -50,8 +53,8 @@ public class ProcessRunner {
     }
 
     private File getProcessDirectory() {
-        return workingDirectory.map(name -> new File(context.baseDirectory(), name))
-                .orElse(context.baseDirectory());
+        return workingDirectory.map(name -> new File(workspace, name))
+                .orElse(workspace);
     }
 
     private Optional<Process> start(final ProcessBuilder builder) {

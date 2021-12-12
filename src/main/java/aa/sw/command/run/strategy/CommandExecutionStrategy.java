@@ -38,7 +38,8 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
                 .orElseThrow(() -> new IllegalArgumentException("Missing command"));
 
         final Command command = Command.parse(parameters)
-                .interpolate(entry.getValues());
+                .interpolate(entry.getValues())
+                .withWorkspace(entry.getWorkPath());
 
         return new Builder(command)
                 .workingDirectory(entry.getWorkingDirectory())
@@ -96,6 +97,7 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
         return ProcessRunner.builder()
                 .context(context)
                 .command(command.getCommandAndArgs())
+                .workspace(command.getWorkspace().toFile())
                 .workingDirectory(workingDirectory)
                 /* TODO: we need to retrieve these from somewhere */
                 .environmentVariables(environmentVariables.stream().collect(Collectors.toMap(k -> k, v -> v)))
