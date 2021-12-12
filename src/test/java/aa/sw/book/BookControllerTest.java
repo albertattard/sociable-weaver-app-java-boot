@@ -21,6 +21,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
@@ -92,7 +93,7 @@ class BookControllerTest {
             /* Given */
             final Path bookPath = Path.of("path-to-book");
             final Map<String, ?> params = Map.of("bookPath", bookPath);
-            when(service.openBook(bookPath)).thenReturn(Result.error(new Exception()));
+            when(service.openBook(bookPath)).thenReturn(Result.error(new Exception("Simulating an error")));
 
             /* When */
             final ResultActions result = makeOpenBookRequest(params);
@@ -117,8 +118,8 @@ class BookControllerTest {
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, ?> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             final Chapter chapter = Chapter.builder()
-                    .entry(Chapter.Entry.builder().build())
-                    .entry(Chapter.Entry.builder().build())
+                    .entry(createEntry())
+                    .entry(createEntry())
                     .build();
             when(service.readChapter(bookPath, chapterPath)).thenReturn(Result.value(chapter));
 
@@ -136,7 +137,8 @@ class BookControllerTest {
             final Path bookPath = Path.of("src/test/resources/fixtures/books");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, ?> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            when(service.readChapter(bookPath, chapterPath)).thenReturn(Result.error(new FileNotFoundException()));
+            when(service.readChapter(bookPath, chapterPath))
+                    .thenReturn(Result.error(new FileNotFoundException("Simulating an error")));
 
             /* When */
             final ResultActions result = makeReadChapterRequest(params);
@@ -152,7 +154,8 @@ class BookControllerTest {
             final Path bookPath = Path.of("src/test/resources/fixtures/books");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, ?> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            when(service.readChapter(bookPath, chapterPath)).thenReturn(Result.error(new Exception()));
+            when(service.readChapter(bookPath, chapterPath))
+                    .thenReturn(Result.error(new Exception("Simulating an error")));
 
             /* When */
             final ResultActions result = makeReadChapterRequest(params);
@@ -160,6 +163,10 @@ class BookControllerTest {
             /* Then */
             result.andExpect(status().isUnprocessableEntity())
                     .andExpect(jsonPath("message", is("Encountered an unexpected error")));
+        }
+
+        private Chapter.Entry createEntry() {
+            return Chapter.Entry.builder().id(UUID.randomUUID()).type("something").build();
         }
 
         private ResultActions makeReadChapterRequest(final Map<String, ?> params) throws Exception {
