@@ -2,8 +2,8 @@ package aa.sw.command.run.strategy;
 
 import aa.sw.command.CommandResult;
 import aa.sw.command.RunnableEntry;
-import aa.sw.command.run.CommandFormatter;
 import aa.sw.command.run.Command;
+import aa.sw.command.run.CommandFormatter;
 import aa.sw.command.run.CommandRunnerContext;
 import aa.sw.command.run.ProcessResult;
 import aa.sw.command.run.ProcessRunner;
@@ -37,7 +37,8 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
         final List<String> parameters = entry.getParameters()
                 .orElseThrow(() -> new IllegalArgumentException("Missing command"));
 
-        final Command parser = Command.parse(parameters);
+        final Command parser = Command.parse(parameters)
+                .interpolate(entry.getValues());
 
         return new Builder(parser.getCommandAndArgs())
                 .workingDirectory(entry.getWorkingDirectory())

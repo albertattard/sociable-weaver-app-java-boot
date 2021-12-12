@@ -8,24 +8,31 @@ import lombok.Value;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static java.util.Objects.requireNonNull;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Command {
 
-    String formatted;
+    List<String> parameters;
     List<String> commandAndArgs;
 
     public static Command parse(final List<String> parameters) {
+        requireNonNull(parameters);
 
         final List<String> commandAndArgs = new ArrayList<>();
         final StringBuilder buffer = new StringBuilder();
         boolean spacesAreIncludedInArg = false;
         Group group = null;
 
-        for (String line : parameters) {
-            for (char c : line.toCharArray()) {
+        for (final String line : parameters) {
+            for (final char c : line.toCharArray()) {
                 switch (c) {
                     case '\'':
                     case '"':
@@ -58,21 +65,59 @@ public class Command {
             commandAndArgs.add(buffer.toString());
         }
 
-        final String formatted = String.join("\n", parameters);
-
         return builder()
-                .formatted(formatted)
+                .parameters(parameters)
                 .commandAndArgs(commandAndArgs)
                 .build();
     }
 
+    public Command interpolate(final Optional<Map<String, String>> values) {
+        requireNonNull(values);
+
+        return values.map(this::interpolate)
+                .orElse(this);
+    }
+
+    public Command interpolate(final Map<String, String> values) {
+        requireNonNull(values);
+
+        return toBuilder()
+                .parameters(interpolate(parameters, values))
+                .commandAndArgs(interpolate(commandAndArgs, values))
+                .build();
+    }
+
+    private static List<String> interpolate(final List<String> input, final Map<String, String> variables) {
+        requireNonNull(input);
+        requireNonNull(variables);
+
+        final Pattern variablePattern = Pattern.compile("\\$\\{(.+)}");
+
+        final List<String> interpolated = new ArrayList<>(input.size());
+        for (int i = 0, size = input.size(); i < size; i++) {
+            final String text = input.get(i);
+            interpolated.add(text);
+
+            final Matcher matcher = variablePattern.matcher(text);
+            if (matcher.find()) {
+                final String variable = matcher.group(1);
+                final String value = variables.get(variable);
+                if (value != null) {
+                    interpolated.set(i, text.replace("${" + variable + "}", value));
+                }
+            }
+        }
+
+        return interpolated;
+    }
+
     public String toString() {
-        return formatted;
+        return String.join("\n", parameters);
     }
 
     public static class CommandBuilder {
         public Command build() {
-            return new Command(formatted, List.copyOf(commandAndArgs));
+            return new Command(List.copyOf(parameters), List.copyOf(commandAndArgs));
         }
     }
 
