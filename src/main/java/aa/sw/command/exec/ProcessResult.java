@@ -16,7 +16,7 @@ public class ProcessResult {
     ExitState exitState;
     OptionalInt exitValue;
 
-    enum ExitState {
+    public enum ExitState {
         NOT_STARTED,
         TIMED_OUT,
         FINISHED_IN_TIME

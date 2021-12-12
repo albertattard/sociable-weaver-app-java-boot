@@ -2,6 +2,7 @@ package aa.sw.command.exec;
 
 import aa.sw.command.CommandResult;
 import aa.sw.command.RunnableEntry;
+import aa.sw.command.exec.strategy.Command;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -12,18 +13,18 @@ import java.util.function.Consumer;
 import static java.util.Objects.requireNonNull;
 
 @Service
-public class CommandExecutor {
+public class RunnableEntryRunner {
 
     public CommandResult run(final RunnableEntry entry, final Consumer<String> output) {
         requireNonNull(entry);
         requireNonNull(output);
 
         if (entry.isDryRun()) {
-            output.accept("Cannot run as entry is marked as dry run!!");
+            output.accept("Cannot run an entry that is flagged as dry run!!");
             return CommandResult.dryRun();
         }
 
-        return findExecutor(entry)
+        return findStrategy(entry)
                 .map(strategy -> execute(strategy, output))
                 .orElseGet(() -> {
                     output.accept("No execution strategy found that can execute this entry");
@@ -32,7 +33,7 @@ public class CommandExecutor {
     }
 
 
-    private CommandResult execute(final CodeExecutorStrategy strategy, final Consumer<String> output) {
+    private CommandResult execute(final RunnableEntryExecutorStrategy strategy, final Consumer<String> output) {
         requireNonNull(strategy);
         requireNonNull(output);
 
@@ -46,7 +47,7 @@ public class CommandExecutor {
         return strategy.execute(context);
     }
 
-    private Optional<CodeExecutorStrategy> findExecutor(final RunnableEntry entry) {
+    private Optional<RunnableEntryExecutorStrategy> findStrategy(final RunnableEntry entry) {
         requireNonNull(entry);
 
         return switch (entry.getType().toLowerCase(Locale.ROOT)) {

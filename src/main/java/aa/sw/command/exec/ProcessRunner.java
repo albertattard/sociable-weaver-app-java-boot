@@ -39,7 +39,11 @@ public class ProcessRunner {
             return ProcessResult.notStarted();
         }
 
-        final ProcessBuilder builder = new ProcessBuilder(command);
+        /* TODO: need to extract */
+        final CommandParser parser = new CommandParser();
+        final List<String> parse = parser.parse(command);
+
+        final ProcessBuilder builder = new ProcessBuilder(parse);
         builder.directory(directory);
         builder.environment().putAll(environmentVariables);
         builder.redirectErrorStream(true);

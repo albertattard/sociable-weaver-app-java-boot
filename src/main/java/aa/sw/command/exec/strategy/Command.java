@@ -1,7 +1,12 @@
-package aa.sw.command.exec;
+package aa.sw.command.exec.strategy;
 
 import aa.sw.command.CommandResult;
 import aa.sw.command.RunnableEntry;
+import aa.sw.command.exec.CommandFormatter;
+import aa.sw.command.exec.CommandRunnerContext;
+import aa.sw.command.exec.ProcessResult;
+import aa.sw.command.exec.ProcessRunner;
+import aa.sw.command.exec.RunnableEntryExecutorStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +19,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
-public class Command implements CodeExecutorStrategy {
+public class Command implements RunnableEntryExecutorStrategy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Command.class);
 
@@ -25,7 +30,7 @@ public class Command implements CodeExecutorStrategy {
     private final int expectedExitValue;
     private final Duration commandTimeout;
 
-    public static CodeExecutorStrategy of(final RunnableEntry entry) {
+    public static RunnableEntryExecutorStrategy of(final RunnableEntry entry) {
         requireNonNull(entry);
 
         return new Builder(entry.getParameters().orElse(Collections.emptyList()))

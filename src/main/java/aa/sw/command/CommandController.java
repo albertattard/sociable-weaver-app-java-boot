@@ -1,6 +1,6 @@
 package aa.sw.command;
 
-import aa.sw.command.exec.CommandExecutor;
+import aa.sw.command.exec.RunnableEntryRunner;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,20 +25,20 @@ public class CommandController {
     /* TODO: This will not work well with multi tenants */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private final CommandExecutor code;
+    private final RunnableEntryRunner runner;
 
     @MessageMapping("/run")
     public void run(final Principal principal, final RunnableEntry entry) {
         executor.submit(() -> {
             final Consumer<String> output = createOutput(principal);
-            final CommandResult commandResult = runCommand(entry, output);
-            sentOutput(principal, commandResult.asString(), Topic.OUTCOME);
+            final CommandResult commandResult = run(entry, output);
+            sendOutput(principal, commandResult.asString(), Topic.OUTCOME);
         });
     }
 
-    private CommandResult runCommand(final RunnableEntry entry, final Consumer<String> output) {
+    private CommandResult run(final RunnableEntry entry, final Consumer<String> output) {
         try {
-            return code.run(entry, output);
+            return runner.run(entry, output);
         } catch (final RuntimeException e) {
             LOGGER.error("Failed run command {}", entry, e);
             output.accept("Failed to run command");
@@ -47,10 +47,10 @@ public class CommandController {
     }
 
     private Consumer<String> createOutput(final Principal principal) {
-        return line -> sentOutput(principal, line, Topic.OUTPUT);
+        return line -> sendOutput(principal, line, Topic.OUTPUT);
     }
 
-    private void sentOutput(final Principal principal, final String line, final Topic topic) {
+    private void sendOutput(final Principal principal, final String line, final Topic topic) {
         simpMessagingTemplate.convertAndSendToUser(
                 principal.getName(),
                 topic.getDestination(),
