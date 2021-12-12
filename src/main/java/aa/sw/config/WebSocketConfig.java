@@ -1,6 +1,5 @@
-package aa.sw.command;
+package aa.sw.config;
 
-import aa.sw.config.AppProperties;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

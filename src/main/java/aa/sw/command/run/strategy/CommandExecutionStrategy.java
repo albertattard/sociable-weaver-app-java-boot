@@ -1,12 +1,13 @@
-package aa.sw.command.exec.strategy;
+package aa.sw.command.run.strategy;
 
 import aa.sw.command.CommandResult;
 import aa.sw.command.RunnableEntry;
-import aa.sw.command.exec.CommandFormatter;
-import aa.sw.command.exec.CommandRunnerContext;
-import aa.sw.command.exec.ProcessResult;
-import aa.sw.command.exec.ProcessRunner;
-import aa.sw.command.exec.RunnableEntryExecutorStrategy;
+import aa.sw.command.run.CommandFormatter;
+import aa.sw.command.run.Command;
+import aa.sw.command.run.CommandRunnerContext;
+import aa.sw.command.run.ProcessResult;
+import aa.sw.command.run.ProcessRunner;
+import aa.sw.command.run.RunnableEntryExecutorStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +20,12 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
-public class Command implements RunnableEntryExecutorStrategy {
+public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Command.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommandExecutionStrategy.class);
 
     private final Optional<String> workingDirectory;
-    private final List<String> command;
+    private final List<String> commandAndArgs;
     private final List<String> environmentVariables;
     private final boolean ignoreErrors;
     private final int expectedExitValue;
@@ -33,7 +34,12 @@ public class Command implements RunnableEntryExecutorStrategy {
     public static RunnableEntryExecutorStrategy of(final RunnableEntry entry) {
         requireNonNull(entry);
 
-        return new Builder(entry.getParameters().orElse(Collections.emptyList()))
+        final List<String> parameters = entry.getParameters()
+                .orElseThrow(() -> new IllegalArgumentException("Missing command"));
+
+        final Command parser = Command.parse(parameters);
+
+        return new Builder(parser.getCommandAndArgs())
                 .workingDirectory(entry.getWorkingDirectory())
                 .environmentVariables(entry.getEnvironmentVariables().orElse(Collections.emptyList()))
                 .ignoreErrors(entry.getIgnoreErrors().orElse(false))
@@ -42,11 +48,11 @@ public class Command implements RunnableEntryExecutorStrategy {
                 .build();
     }
 
-    private Command(final Builder builder) {
+    private CommandExecutionStrategy(final Builder builder) {
         requireNonNull(builder);
 
         this.workingDirectory = builder.workingDirectory;
-        this.command = builder.command;
+        this.commandAndArgs = builder.commandAndArgs;
         this.environmentVariables = builder.environmentVariables;
         this.ignoreErrors = builder.ignoreErrors;
         this.expectedExitValue = builder.expectedExitValue;
@@ -84,11 +90,11 @@ public class Command implements RunnableEntryExecutorStrategy {
 
     @Override
     public CommandResult execute(final CommandRunnerContext context) {
-        context.appendLine(CommandFormatter.format(workingDirectory, command));
+        context.appendLine(CommandFormatter.format(workingDirectory, commandAndArgs));
 
         return ProcessRunner.builder()
                 .context(context)
-                .command(command)
+                .command(commandAndArgs)
                 .workingDirectory(workingDirectory)
                 /* TODO: we need to retrieve these from somewhere */
                 .environmentVariables(environmentVariables.stream().collect(Collectors.toMap(k -> k, v -> v)))
@@ -116,7 +122,7 @@ public class Command implements RunnableEntryExecutorStrategy {
 
     private void logExitValue(final int exitValue) {
         LOGGER.debug("Command {} finished with exit value {} (expecting {})",
-                CommandFormatter.format(workingDirectory, command), exitValue, expectedExitValue);
+                CommandFormatter.format(workingDirectory, commandAndArgs), exitValue, expectedExitValue);
     }
 
     private void waitForTheProcessToFinish(final Process process) {
@@ -162,7 +168,7 @@ public class Command implements RunnableEntryExecutorStrategy {
     }
 
     public static class Builder {
-        private final List<String> command;
+        private final List<String> commandAndArgs;
         private Optional<String> workingDirectory = Optional.empty();
         private List<String> environmentVariables = Collections.emptyList();
         private boolean ignoreErrors;
@@ -170,7 +176,7 @@ public class Command implements RunnableEntryExecutorStrategy {
         private Duration commandTimeout = Duration.ofMinutes(5);
 
         private Builder(final List<String> command) {
-            this.command = requireNonNull(command);
+            this.commandAndArgs = requireNonNull(command);
         }
 
         public Builder workingDirectory(final Optional<String> workingDirectory) {
@@ -198,8 +204,8 @@ public class Command implements RunnableEntryExecutorStrategy {
             return this;
         }
 
-        public Command build() {
-            return new Command(this);
+        public CommandExecutionStrategy build() {
+            return new CommandExecutionStrategy(this);
         }
 
         public CommandResult execute(final CommandRunnerContext context) {

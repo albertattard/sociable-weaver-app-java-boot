@@ -1,4 +1,4 @@
-package aa.sw.command.exec;
+package aa.sw.command.run;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package aa.sw.command;
 
-import aa.sw.command.exec.RunnableEntryRunner;
+import aa.sw.command.run.RunnableEntryRunner;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,6 @@ public class CommandController {
     /* TODO: Should we have a gateway instead? */
     private final SimpMessagingTemplate simpMessagingTemplate;
 
-    /* TODO: This will not work well with multi tenants */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private final RunnableEntryRunner runner;

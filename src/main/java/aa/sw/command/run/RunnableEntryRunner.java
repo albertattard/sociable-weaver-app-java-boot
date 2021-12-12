@@ -1,8 +1,8 @@
-package aa.sw.command.exec;
+package aa.sw.command.run;
 
 import aa.sw.command.CommandResult;
 import aa.sw.command.RunnableEntry;
-import aa.sw.command.exec.strategy.Command;
+import aa.sw.command.run.strategy.CommandExecutionStrategy;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -51,7 +51,7 @@ public class RunnableEntryRunner {
         requireNonNull(entry);
 
         return switch (entry.getType().toLowerCase(Locale.ROOT)) {
-            case "command" -> Optional.of(Command.of(entry));
+            case "command" -> Optional.of(CommandExecutionStrategy.of(entry));
 //            case "create" -> Optional.of(Create.of(entry));
 //            case "docker-tag-and-push" -> Optional.of(DockerTagAndPush.of(entry));
 //            case "download" -> Optional.of(Download.of(entry));

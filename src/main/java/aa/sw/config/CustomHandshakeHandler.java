@@ -1,5 +1,6 @@
-package aa.sw.command;
+package aa.sw.config;
 
+import aa.sw.config.StompPrincipal;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;

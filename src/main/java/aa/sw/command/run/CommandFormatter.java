@@ -1,4 +1,4 @@
-package aa.sw.command.exec;
+package aa.sw.command.run;
 
 import java.io.File;
 import java.util.Arrays;

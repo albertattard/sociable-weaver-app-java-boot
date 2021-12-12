@@ -1,4 +1,4 @@
-package aa.sw.command.exec;
+package aa.sw.command.run;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,11 +39,7 @@ public class ProcessRunner {
             return ProcessResult.notStarted();
         }
 
-        /* TODO: need to extract */
-        final CommandParser parser = new CommandParser();
-        final List<String> parse = parser.parse(command);
-
-        final ProcessBuilder builder = new ProcessBuilder(parse);
+        final ProcessBuilder builder = new ProcessBuilder(command);
         builder.directory(directory);
         builder.environment().putAll(environmentVariables);
         builder.redirectErrorStream(true);

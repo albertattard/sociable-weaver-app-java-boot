@@ -1,4 +1,4 @@
-package aa.sw.command;
+package aa.sw.config;
 
 import lombok.NonNull;
 import lombok.Value;

@@ -1,13 +1,23 @@
-package aa.sw.command.exec;
+package aa.sw.command.run;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-public class CommandParser {
+@Value
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class Command {
 
-    public List<String> parse(final List<String> parameters) {
+    String formatted;
+    List<String> commandAndArgs;
+
+    public static Command parse(final List<String> parameters) {
 
         final List<String> commandAndArgs = new ArrayList<>();
         final StringBuilder buffer = new StringBuilder();
@@ -24,6 +34,7 @@ public class CommandParser {
                             spacesAreIncludedInArg = true;
                         } else if (group.matches(c)) {
                             spacesAreIncludedInArg = false;
+                            group = null;
                         } else {
                             buffer.append(c);
                         }
@@ -47,7 +58,22 @@ public class CommandParser {
             commandAndArgs.add(buffer.toString());
         }
 
-        return Collections.unmodifiableList(commandAndArgs);
+        final String formatted = String.join("\n", parameters);
+
+        return builder()
+                .formatted(formatted)
+                .commandAndArgs(commandAndArgs)
+                .build();
+    }
+
+    public String toString() {
+        return formatted;
+    }
+
+    public static class CommandBuilder {
+        public Command build() {
+            return new Command(formatted, List.copyOf(commandAndArgs));
+        }
     }
 
     private enum Group {
