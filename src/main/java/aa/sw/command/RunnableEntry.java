@@ -6,11 +6,16 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import static java.util.Objects.requireNonNull;
 
 @Value
 @Builder
@@ -36,12 +41,43 @@ public class RunnableEntry {
         return Optional.ofNullable(name);
     }
 
+    public String getWorkspace() {
+        return workPath;
+    }
+
     public Optional<String> getWorkingDirectory() {
         return Optional.ofNullable(workingDirectory);
     }
 
     public Optional<List<String>> getParameters() {
         return Optional.ofNullable(parameters);
+    }
+
+    public Optional<String> getParameterAt(final int index) {
+        return getParameters()
+                .filter(hasEnoughElements(index))
+                .map(list -> list.get(index));
+    }
+
+    public String getParameterAtOrFail(final int index, final String message) {
+        return getParameterAt(index)
+                .orElseThrow(() -> new IllegalArgumentException(message));
+    }
+
+    public String joinParametersWithOrFail(final String delimiter) {
+        requireNonNull(delimiter);
+
+        return getParameters()
+                .map(p -> String.join(delimiter, p))
+                .orElseThrow(() -> new IllegalArgumentException("Missing parameters"));
+    }
+
+    public Stream<String> getParametersAsStream() {
+        return getParameters().stream().flatMap(Collection::stream);
+    }
+
+    private Predicate<List<String>> hasEnoughElements(final int index) {
+        return list -> index < list.size();
     }
 
     public Optional<List<String>> getVariables() {

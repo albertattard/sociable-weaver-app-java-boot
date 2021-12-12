@@ -7,31 +7,29 @@ import aa.sw.command.run.CommandFormatter;
 import aa.sw.command.run.CommandRunnerContext;
 import aa.sw.command.run.ProcessResult;
 import aa.sw.command.run.ProcessRunner;
-import aa.sw.command.run.RunnableEntryExecutorStrategy;
+import aa.sw.command.run.RunnableEntryExecutionStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
-public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
+public class CommandStrategy implements RunnableEntryExecutionStrategy {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CommandExecutionStrategy.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommandStrategy.class);
 
-    private final Optional<String> workingDirectory;
     private final Command command;
     private final List<String> environmentVariables;
     private final boolean ignoreErrors;
     private final int expectedExitValue;
     private final Duration commandTimeout;
 
-    public static RunnableEntryExecutorStrategy of(final RunnableEntry entry) {
+    public static RunnableEntryExecutionStrategy of(final RunnableEntry entry) {
         requireNonNull(entry);
 
         final List<String> parameters = entry.getParameters()
@@ -39,10 +37,10 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
 
         final Command command = Command.parse(parameters)
                 .interpolate(entry.getValues())
-                .withWorkspace(entry.getWorkPath());
+                .withWorkspace(entry.getWorkPath())
+                .withWorkingDirectory(entry.getWorkingDirectory());
 
         return new Builder(command)
-                .workingDirectory(entry.getWorkingDirectory())
                 .environmentVariables(entry.getEnvironmentVariables().orElse(Collections.emptyList()))
                 .ignoreErrors(entry.getIgnoreErrors().orElse(false))
                 .expectedExitValue(entry.getExpectedExitValue().orElse(0))
@@ -50,10 +48,9 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
                 .build();
     }
 
-    private CommandExecutionStrategy(final Builder builder) {
+    private CommandStrategy(final Builder builder) {
         requireNonNull(builder);
 
-        this.workingDirectory = builder.workingDirectory;
         this.command = builder.command;
         this.environmentVariables = builder.environmentVariables;
         this.ignoreErrors = builder.ignoreErrors;
@@ -61,44 +58,15 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
         this.commandTimeout = builder.commandTimeout;
     }
 
-    public static CommandResult execute(final CommandRunnerContext context, final Optional<String> workingDirectory,
-                                        final String... command) {
-        return execute(context, workingDirectory, List.of(command));
-    }
-
-    public static CommandResult execute(final CommandRunnerContext context, final Optional<String> workingDirectory,
-                                        final List<String> command) {
-        return new Builder(Command.parse(command))
-                .workingDirectory(workingDirectory)
-                .build()
-                .execute(context);
-    }
-
-    public static CommandResult execute(final CommandRunnerContext context, final Optional<String> workingDirectory,
-                                        final List<String> environmentVariables,
-                                        final String... command) {
-        return execute(context, workingDirectory, environmentVariables, List.of(command));
-    }
-
-    public static CommandResult execute(final CommandRunnerContext context, final Optional<String> workingDirectory,
-                                        final List<String> environmentVariables,
-                                        final List<String> command) {
-        return new Builder(Command.parse(command))
-                .workingDirectory(workingDirectory)
-                .environmentVariables(environmentVariables)
-                .build()
-                .execute(context);
-    }
-
     @Override
     public CommandResult execute(final CommandRunnerContext context) {
-        context.appendLine(CommandFormatter.format(workingDirectory, command));
+        context.appendLine(CommandFormatter.format(command));
 
         return ProcessRunner.builder()
                 .context(context)
                 .command(command.getCommandAndArgs())
                 .workspace(command.getWorkspace().toFile())
-                .workingDirectory(workingDirectory)
+                .workingDirectory(command.getWorkingDirectory())
                 /* TODO: we need to retrieve these from somewhere */
                 .environmentVariables(environmentVariables.stream().collect(Collectors.toMap(k -> k, v -> v)))
                 .commandTimeout(commandTimeout)
@@ -125,7 +93,7 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
 
     private void logExitValue(final int exitValue) {
         LOGGER.debug("Command {} finished with exit value {} (expecting {})",
-                CommandFormatter.format(workingDirectory, command), exitValue, expectedExitValue);
+                CommandFormatter.format(command), exitValue, expectedExitValue);
     }
 
     private void waitForTheProcessToFinish(final Process process) {
@@ -170,9 +138,14 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
         return new Builder(Command.parse(parameters));
     }
 
+    public static Builder builder(final Command command) {
+        requireNonNull(command);
+
+        return new Builder(command);
+    }
+
     public static class Builder {
         private final Command command;
-        private Optional<String> workingDirectory = Optional.empty();
         private List<String> environmentVariables = Collections.emptyList();
         private boolean ignoreErrors;
         private int expectedExitValue = 0;
@@ -180,11 +153,6 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
 
         private Builder(final Command command) {
             this.command = requireNonNull(command);
-        }
-
-        public Builder workingDirectory(final Optional<String> workingDirectory) {
-            this.workingDirectory = requireNonNull(workingDirectory);
-            return this;
         }
 
         public Builder environmentVariables(final List<String> environmentVariables) {
@@ -207,8 +175,8 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
             return this;
         }
 
-        public CommandExecutionStrategy build() {
-            return new CommandExecutionStrategy(this);
+        public CommandStrategy build() {
+            return new CommandStrategy(this);
         }
 
         public CommandResult execute(final CommandRunnerContext context) {

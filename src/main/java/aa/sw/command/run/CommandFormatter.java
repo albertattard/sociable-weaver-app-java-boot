@@ -1,6 +1,5 @@
 package aa.sw.command.run;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +9,6 @@ import static java.util.Objects.requireNonNull;
 
 public class CommandFormatter {
 
-    private final Optional<String> workingDirectory;
     private final char commandPromptSymbol;
     private final Optional<List<String>> environmentVariables;
     private final Command command;
@@ -18,7 +16,6 @@ public class CommandFormatter {
     private CommandFormatter(final Builder builder) {
         requireNonNull(builder);
 
-        this.workingDirectory = builder.workingDirectory;
         this.commandPromptSymbol = builder.commandPromptSymbol;
         this.environmentVariables = builder.environmentVariables;
         this.command = builder.command;
@@ -36,38 +33,8 @@ public class CommandFormatter {
         return new Builder(command);
     }
 
-    public static String format(final File workingDirectory, final String... command) {
-        return format(Optional.of(workingDirectory.toString()), command);
-    }
-
-    public static String format(final File workingDirectory, final Command command) {
-        return format(Optional.of(workingDirectory.toString()), command);
-    }
-
-    public static String format(final Optional<String> workingDirectory, final String... command) {
+    public static String format(final Command command) {
         return builder(command)
-                .workingDirectory(workingDirectory)
-                .format();
-    }
-
-    public static String format(final Optional<String> workingDirectory, final List<String> command) {
-        return builder(command)
-                .workingDirectory(workingDirectory)
-                .format();
-    }
-
-    public static String format(final Optional<String> workingDirectory, final Command command) {
-        return builder(command)
-                .workingDirectory(workingDirectory)
-                .format();
-    }
-
-    public static String format(final Optional<String> workingDirectory,
-                                final Optional<List<String>> environmentVariables,
-                                final String... command) {
-        return builder(command)
-                .workingDirectory(workingDirectory)
-                .environmentVariables(environmentVariables)
                 .format();
     }
 
@@ -79,7 +46,7 @@ public class CommandFormatter {
     }
 
     private String formattedWorkingDirectory() {
-        return workingDirectory
+        return command.getWorkingDirectory()
                 .map(CommandFormatter::formatWorkingDirectory)
                 .orElse("");
     }
@@ -112,36 +79,14 @@ public class CommandFormatter {
         return command.toString();
     }
 
-    private static String wrapInQuotesIfRequired(final String commandOrArgument) {
-        if (commandOrArgument.contains("!")) {
-            return String.format("'%s'", commandOrArgument);
-        }
-
-        if (commandOrArgument.contains(" ") && !commandOrArgument.contains("\"")) {
-            return String.format("\"%s\"", commandOrArgument);
-        }
-
-        return commandOrArgument;
-    }
-
-    private static String prefixWithWhiteSpace(final String text) {
-        return " " + text;
-    }
-
     public static class Builder {
 
-        private Optional<String> workingDirectory = Optional.empty();
         private char commandPromptSymbol = '$';
         private Optional<List<String>> environmentVariables = Optional.empty();
         private Command command;
 
         private Builder(final Command command) {
             command(command);
-        }
-
-        public Builder workingDirectory(final Optional<String> workingDirectory) {
-            this.workingDirectory = requireNonNull(workingDirectory);
-            return this;
         }
 
         public Builder commandPromptSymbol(final char commandPromptSymbol) {

@@ -22,7 +22,7 @@ import static java.util.Objects.requireNonNull;
 public class Command {
 
     Path workspace;
-    String workingDirectory;
+    Optional<String> workingDirectory;
     List<String> parameters;
     List<String> commandAndArgs;
 
@@ -115,8 +115,18 @@ public class Command {
     }
 
     public Command withWorkspace(final String workspace) {
+        requireNonNull(workspace);
+
         return toBuilder()
                 .workspace(Path.of(workspace))
+                .build();
+    }
+
+    public Command withWorkingDirectory(final Optional<String> workingDirectory) {
+        requireNonNull(workingDirectory);
+
+        return toBuilder()
+                .workingDirectory(workingDirectory)
                 .build();
     }
 

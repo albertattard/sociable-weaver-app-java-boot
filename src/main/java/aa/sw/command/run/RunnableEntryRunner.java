@@ -2,7 +2,13 @@ package aa.sw.command.run;
 
 import aa.sw.command.CommandResult;
 import aa.sw.command.RunnableEntry;
-import aa.sw.command.run.strategy.CommandExecutionStrategy;
+import aa.sw.command.run.strategy.CommandStrategy;
+import aa.sw.command.run.strategy.CreateStrategy;
+import aa.sw.command.run.strategy.DownloadStrategy;
+import aa.sw.command.run.strategy.GitApplyPatchStrategy;
+import aa.sw.command.run.strategy.GitCommitChangesStrategy;
+import aa.sw.command.run.strategy.GitTagCurrentCommitStrategy;
+import aa.sw.command.run.strategy.ReplaceStrategy;
 import org.springframework.stereotype.Service;
 
 import java.util.Locale;
@@ -26,13 +32,12 @@ public class RunnableEntryRunner {
         return findStrategy(entry)
                 .map(strategy -> execute(strategy, output))
                 .orElseGet(() -> {
-                    output.accept("No execution strategy found that can execute this entry");
+                    output.accept("No execution strategy found that can execute an entry of type " + entry.getType());
                     return CommandResult.executionStrategyNotFound();
                 });
     }
 
-
-    private CommandResult execute(final RunnableEntryExecutorStrategy strategy, final Consumer<String> output) {
+    private CommandResult execute(final RunnableEntryExecutionStrategy strategy, final Consumer<String> output) {
         requireNonNull(strategy);
         requireNonNull(output);
 
@@ -43,18 +48,18 @@ public class RunnableEntryRunner {
         return strategy.execute(context);
     }
 
-    private Optional<RunnableEntryExecutorStrategy> findStrategy(final RunnableEntry entry) {
+    private Optional<RunnableEntryExecutionStrategy> findStrategy(final RunnableEntry entry) {
         requireNonNull(entry);
 
         return switch (entry.getType().toLowerCase(Locale.ROOT)) {
-            case "command" -> Optional.of(CommandExecutionStrategy.of(entry));
-//            case "create" -> Optional.of(Create.of(entry));
+            case "command" -> Optional.of(CommandStrategy.of(entry));
+            case "create" -> Optional.of(CreateStrategy.of(entry));
 //            case "docker-tag-and-push" -> Optional.of(DockerTagAndPush.of(entry));
-//            case "download" -> Optional.of(Download.of(entry));
-//            case "git-apply-patch" -> Optional.of(GitApplyPatch.of(entry));
-//            case "git-commit-changes" -> Optional.of(GitCommitChanges.of(entry));
-//            case "git-tag-current-commit" -> Optional.of(GitTagCurrentCommit.of(entry));
-//            case "replace" -> Optional.of(Replace.of(entry));
+            case "download" -> Optional.of(DownloadStrategy.of(entry));
+            case "git-apply-patch" -> Optional.of(GitApplyPatchStrategy.of(entry));
+            case "git-commit-changes" -> Optional.of(GitCommitChangesStrategy.of(entry));
+            case "git-tag-current-commit" -> Optional.of(GitTagCurrentCommitStrategy.of(entry));
+            case "replace" -> Optional.of(ReplaceStrategy.of(entry));
             default -> Optional.empty();
         };
     }
