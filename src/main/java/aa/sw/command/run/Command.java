@@ -111,8 +111,12 @@ public class Command {
         return interpolated;
     }
 
-    public String toString() {
+    public String asString() {
         return String.join("\n", parameters);
+    }
+
+    public String toString() {
+        return asString();
     }
 
     public static class CommandBuilder {

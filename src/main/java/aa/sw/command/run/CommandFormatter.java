@@ -13,7 +13,7 @@ public class CommandFormatter {
     private final Optional<String> workingDirectory;
     private final char commandPromptSymbol;
     private final Optional<List<String>> environmentVariables;
-    private final List<String> command;
+    private final Command command;
 
     private CommandFormatter(final Builder builder) {
         requireNonNull(builder);
@@ -24,11 +24,15 @@ public class CommandFormatter {
         this.command = builder.command;
     }
 
-    public static Builder builder(final String... command) {
-        return builder(Arrays.asList(command));
+    public static Builder builder(final String... parameters) {
+        return builder(Arrays.asList(parameters));
     }
 
-    public static Builder builder(final List<String> command) {
+    public static Builder builder(final List<String> parameters) {
+        return builder(Command.parse(parameters));
+    }
+
+    public static Builder builder(final Command command) {
         return new Builder(command);
     }
 
@@ -36,7 +40,7 @@ public class CommandFormatter {
         return format(Optional.of(workingDirectory.toString()), command);
     }
 
-    public static String format(final File workingDirectory, final List<String> command) {
+    public static String format(final File workingDirectory, final Command command) {
         return format(Optional.of(workingDirectory.toString()), command);
     }
 
@@ -47,6 +51,12 @@ public class CommandFormatter {
     }
 
     public static String format(final Optional<String> workingDirectory, final List<String> command) {
+        return builder(command)
+                .workingDirectory(workingDirectory)
+                .format();
+    }
+
+    public static String format(final Optional<String> workingDirectory, final Command command) {
         return builder(command)
                 .workingDirectory(workingDirectory)
                 .format();
@@ -99,10 +109,7 @@ public class CommandFormatter {
     }
 
     private String formattedCommand() {
-        return command.stream()
-                .map(CommandFormatter::wrapInQuotesIfRequired)
-                .map(CommandFormatter::prefixWithWhiteSpace)
-                .collect(Collectors.joining());
+        return command.toString();
     }
 
     private static String wrapInQuotesIfRequired(final String commandOrArgument) {
@@ -126,9 +133,9 @@ public class CommandFormatter {
         private Optional<String> workingDirectory = Optional.empty();
         private char commandPromptSymbol = '$';
         private Optional<List<String>> environmentVariables = Optional.empty();
-        private List<String> command;
+        private Command command;
 
-        private Builder(final List<String> command) {
+        private Builder(final Command command) {
             command(command);
         }
 
@@ -147,7 +154,7 @@ public class CommandFormatter {
             return this;
         }
 
-        public Builder command(final List<String> command) {
+        public Builder command(final Command command) {
             this.command = requireNonNull(command);
             return this;
         }

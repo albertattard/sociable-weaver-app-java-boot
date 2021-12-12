@@ -25,7 +25,7 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandExecutionStrategy.class);
 
     private final Optional<String> workingDirectory;
-    private final List<String> commandAndArgs;
+    private final Command command;
     private final List<String> environmentVariables;
     private final boolean ignoreErrors;
     private final int expectedExitValue;
@@ -37,10 +37,10 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
         final List<String> parameters = entry.getParameters()
                 .orElseThrow(() -> new IllegalArgumentException("Missing command"));
 
-        final Command parser = Command.parse(parameters)
+        final Command command = Command.parse(parameters)
                 .interpolate(entry.getValues());
 
-        return new Builder(parser.getCommandAndArgs())
+        return new Builder(command)
                 .workingDirectory(entry.getWorkingDirectory())
                 .environmentVariables(entry.getEnvironmentVariables().orElse(Collections.emptyList()))
                 .ignoreErrors(entry.getIgnoreErrors().orElse(false))
@@ -53,7 +53,7 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
         requireNonNull(builder);
 
         this.workingDirectory = builder.workingDirectory;
-        this.commandAndArgs = builder.commandAndArgs;
+        this.command = builder.command;
         this.environmentVariables = builder.environmentVariables;
         this.ignoreErrors = builder.ignoreErrors;
         this.expectedExitValue = builder.expectedExitValue;
@@ -67,7 +67,7 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
 
     public static CommandResult execute(final CommandRunnerContext context, final Optional<String> workingDirectory,
                                         final List<String> command) {
-        return new Builder(command)
+        return new Builder(Command.parse(command))
                 .workingDirectory(workingDirectory)
                 .build()
                 .execute(context);
@@ -82,7 +82,7 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
     public static CommandResult execute(final CommandRunnerContext context, final Optional<String> workingDirectory,
                                         final List<String> environmentVariables,
                                         final List<String> command) {
-        return new Builder(command)
+        return new Builder(Command.parse(command))
                 .workingDirectory(workingDirectory)
                 .environmentVariables(environmentVariables)
                 .build()
@@ -91,11 +91,11 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
 
     @Override
     public CommandResult execute(final CommandRunnerContext context) {
-        context.appendLine(CommandFormatter.format(workingDirectory, commandAndArgs));
+        context.appendLine(CommandFormatter.format(workingDirectory, command));
 
         return ProcessRunner.builder()
                 .context(context)
-                .command(commandAndArgs)
+                .command(command.getCommandAndArgs())
                 .workingDirectory(workingDirectory)
                 /* TODO: we need to retrieve these from somewhere */
                 .environmentVariables(environmentVariables.stream().collect(Collectors.toMap(k -> k, v -> v)))
@@ -123,7 +123,7 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
 
     private void logExitValue(final int exitValue) {
         LOGGER.debug("Command {} finished with exit value {} (expecting {})",
-                CommandFormatter.format(workingDirectory, commandAndArgs), exitValue, expectedExitValue);
+                CommandFormatter.format(workingDirectory, command), exitValue, expectedExitValue);
     }
 
     private void waitForTheProcessToFinish(final Process process) {
@@ -160,24 +160,24 @@ public class CommandExecutionStrategy implements RunnableEntryExecutorStrategy {
         }
     }
 
-    public static Builder builder(final String... command) {
-        return builder(List.of(command));
+    public static Builder builder(final String... parameters) {
+        return builder(List.of(parameters));
     }
 
-    public static Builder builder(final List<String> command) {
-        return new Builder(command);
+    public static Builder builder(final List<String> parameters) {
+        return new Builder(Command.parse(parameters));
     }
 
     public static class Builder {
-        private final List<String> commandAndArgs;
+        private final Command command;
         private Optional<String> workingDirectory = Optional.empty();
         private List<String> environmentVariables = Collections.emptyList();
         private boolean ignoreErrors;
         private int expectedExitValue = 0;
         private Duration commandTimeout = Duration.ofMinutes(5);
 
-        private Builder(final List<String> command) {
-            this.commandAndArgs = requireNonNull(command);
+        private Builder(final Command command) {
+            this.command = requireNonNull(command);
         }
 
         public Builder workingDirectory(final Optional<String> workingDirectory) {
