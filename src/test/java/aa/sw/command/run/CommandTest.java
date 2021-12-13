@@ -106,7 +106,7 @@ class CommandTest {
 
         /* When */
         final Command command = Command.parse(parameters)
-                .interpolate(values);
+                .withInterpolatedValues(values);
 
         /* Then */
         final List<String> commandAndArgs = List.of("echo", "hello world");

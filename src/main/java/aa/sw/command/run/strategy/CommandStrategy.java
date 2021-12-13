@@ -36,7 +36,7 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
                 .orElseThrow(() -> new IllegalArgumentException("Missing command"));
 
         final Command command = Command.parse(parameters)
-                .interpolate(entry.getValues())
+                .withInterpolatedValues(entry.getValues())
                 .withWorkspace(entry.getWorkPath())
                 .withWorkingDirectory(entry.getWorkingDirectory());
 

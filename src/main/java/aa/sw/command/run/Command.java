@@ -74,23 +74,23 @@ public class Command {
                 .build();
     }
 
-    public Command interpolate(final Optional<Map<String, String>> values) {
+    public Command withInterpolatedValues(final Optional<Map<String, String>> values) {
         requireNonNull(values);
 
-        return values.map(this::interpolate)
+        return values.map(this::withInterpolatedValues)
                 .orElse(this);
     }
 
-    public Command interpolate(final Map<String, String> values) {
+    public Command withInterpolatedValues(final Map<String, String> values) {
         requireNonNull(values);
 
         return toBuilder()
-                .parameters(interpolate(parameters, values))
-                .commandAndArgs(interpolate(commandAndArgs, values))
+                .parameters(withInterpolatedValues(parameters, values))
+                .commandAndArgs(withInterpolatedValues(commandAndArgs, values))
                 .build();
     }
 
-    private static List<String> interpolate(final List<String> input, final Map<String, String> variables) {
+    private static List<String> withInterpolatedValues(final List<String> input, final Map<String, String> variables) {
         requireNonNull(input);
         requireNonNull(variables);
 

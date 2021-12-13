@@ -4,6 +4,7 @@ import aa.sw.command.CommandResult;
 import aa.sw.command.RunnableEntry;
 import aa.sw.command.run.strategy.CommandStrategy;
 import aa.sw.command.run.strategy.CreateStrategy;
+import aa.sw.command.run.strategy.DockerTagAndPushStrategy;
 import aa.sw.command.run.strategy.DownloadStrategy;
 import aa.sw.command.run.strategy.GitApplyPatchStrategy;
 import aa.sw.command.run.strategy.GitCommitChangesStrategy;
@@ -54,7 +55,7 @@ public class RunnableEntryRunner {
         return switch (entry.getType().toLowerCase(Locale.ROOT)) {
             case "command" -> Optional.of(CommandStrategy.of(entry));
             case "create" -> Optional.of(CreateStrategy.of(entry));
-//            case "docker-tag-and-push" -> Optional.of(DockerTagAndPush.of(entry));
+            case "docker-tag-and-push" -> Optional.of(DockerTagAndPushStrategy.of(entry));
             case "download" -> Optional.of(DownloadStrategy.of(entry));
             case "git-apply-patch" -> Optional.of(GitApplyPatchStrategy.of(entry));
             case "git-commit-changes" -> Optional.of(GitCommitChangesStrategy.of(entry));
