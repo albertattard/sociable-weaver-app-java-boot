@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
@@ -23,7 +22,6 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandStrategy.class);
 
     private final Command command;
-    private final List<String> environmentVariables;
     private final boolean ignoreErrors;
     private final int expectedExitValue;
     private final Duration commandTimeout;
@@ -35,12 +33,11 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
                 .orElseThrow(() -> new IllegalArgumentException("Missing command"));
 
         final Command command = Command.parse(parameters)
-                .withInterpolatedValues(entry.getValues())
                 .withWorkspace(entry.getWorkPath())
-                .withWorkingDirectory(entry.getWorkingDirectory());
+                .withWorkingDirectory(entry.getWorkingDirectory())
+                .withInterpolatedValues(entry.getValues());
 
         return new Builder(command)
-                .environmentVariables(entry.getEnvironmentVariables().orElse(Collections.emptyList()))
                 .ignoreErrors(entry.getIgnoreErrors().orElse(false))
                 .expectedExitValue(entry.getExpectedExitValue().orElse(0))
                 .commandTimeout(entry.getCommandTimeout().orElse(Duration.ofMinutes(5)))
@@ -51,7 +48,6 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
         requireNonNull(builder);
 
         this.command = builder.command;
-        this.environmentVariables = builder.environmentVariables;
         this.ignoreErrors = builder.ignoreErrors;
         this.expectedExitValue = builder.expectedExitValue;
         this.commandTimeout = builder.commandTimeout;
@@ -66,8 +62,7 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
                 .command(command.getCommandAndArgs())
                 .workspace(command.getWorkspace().toFile())
                 .workingDirectory(command.getWorkingDirectory())
-                /* TODO: we need to retrieve these from somewhere */
-                .environmentVariables(environmentVariables.stream().collect(Collectors.toMap(k -> k, v -> v)))
+                .environmentVariables(command.getEnvironmentVariables())
                 .commandTimeout(commandTimeout)
                 .build()
                 .run()
@@ -103,18 +98,12 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
 
     public static class Builder {
         private final Command command;
-        private List<String> environmentVariables = Collections.emptyList();
         private boolean ignoreErrors;
         private int expectedExitValue = 0;
         private Duration commandTimeout = Duration.ofMinutes(5);
 
         private Builder(final Command command) {
             this.command = requireNonNull(command);
-        }
-
-        public Builder environmentVariables(final List<String> environmentVariables) {
-            this.environmentVariables = requireNonNull(environmentVariables);
-            return this;
         }
 
         public Builder ignoreErrors(final boolean ignoreErrors) {

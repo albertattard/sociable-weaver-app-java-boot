@@ -8,6 +8,7 @@ import aa.sw.command.run.RunnableEntryExecutionStrategy;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,9 +31,10 @@ public class GitTagCurrentCommitStrategy implements RunnableEntryExecutionStrate
                 .orElse(String.format("git tag --annotate '%s'", tag));
 
         final Command command = Command.parse(List.of(parameters))
-                .withInterpolatedValues(entry.getValues())
                 .withWorkspace(entry.getWorkPath())
-                .withWorkingDirectory(entry.getWorkingDirectory());
+                .withWorkingDirectory(entry.getWorkingDirectory())
+                .withEnvironmentVariables(entry.getEnvironmentVariables().orElse(Collections.emptyList()))
+                .withInterpolatedValues(entry.getValues());
 
         return new GitTagCurrentCommitStrategy(command);
     }

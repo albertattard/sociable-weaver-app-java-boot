@@ -20,7 +20,6 @@ public class DockerTagAndPushStrategy implements RunnableEntryExecutionStrategy 
 
     private final Command tag;
     private final Command push;
-    private final List<String> environmentVariables;
 
     public static RunnableEntryExecutionStrategy of(final RunnableEntry entry) {
         requireNonNull(entry);
@@ -32,17 +31,21 @@ public class DockerTagAndPushStrategy implements RunnableEntryExecutionStrategy 
         final String remote = entry.getParameterAtOrFail(1, "Missing Docker target image name");
         final List<String> environmentVariables = entry.getEnvironmentVariables().orElse(Collections.emptyList());
 
+        /* TODO: we need to ensure that the tags and the message do not escape, by having a single or double quote */
         final Command tag = Command.parse(List.of(String.format("docker tag '%s' '%s'", source, remote)))
                 .withWorkspace(workspace)
                 .withWorkingDirectory(workingDirectory)
+                .withEnvironmentVariables(environmentVariables)
                 .withInterpolatedValues(values);
 
+        /* TODO: we need to ensure that the tags and the message do not escape, by having a single or double quote */
         final Command push = Command.parse(List.of(String.format("docker push '%s'", remote)))
                 .withWorkspace(workspace)
                 .withWorkingDirectory(workingDirectory)
+                .withEnvironmentVariables(environmentVariables)
                 .withInterpolatedValues(values);
 
-        return new DockerTagAndPushStrategy(tag, push, environmentVariables);
+        return new DockerTagAndPushStrategy(tag, push);
     }
 
     @Override
@@ -53,13 +56,11 @@ public class DockerTagAndPushStrategy implements RunnableEntryExecutionStrategy 
 
     private CommandResult tag(final CommandRunnerContext context) {
         return CommandStrategy.builder(tag)
-                .environmentVariables(environmentVariables)
                 .execute(context);
     }
 
     private CommandResult push(final CommandRunnerContext context) {
         return CommandStrategy.builder(push)
-                .environmentVariables(environmentVariables)
                 .execute(context);
     }
 }

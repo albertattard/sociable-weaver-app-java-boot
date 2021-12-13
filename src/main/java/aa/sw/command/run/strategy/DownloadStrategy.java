@@ -8,6 +8,7 @@ import aa.sw.command.run.RunnableEntryExecutionStrategy;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -23,10 +24,12 @@ public class DownloadStrategy implements RunnableEntryExecutionStrategy {
         final String link = entry.getParameterAtOrFail(0, "Missing download line");
         final String path = entry.getParameterAtOrFail(1, "Missing file path where the file will be saved");
 
+        /* TODO: we need to ensure that the tags and the message do not escape, by having a single or double quote */
         final Command command = Command.parse(List.of(String.format("curl --location '%s' --output '%s'", link, path)))
-                .withInterpolatedValues(entry.getValues())
                 .withWorkspace(entry.getWorkspace())
-                .withWorkingDirectory(entry.getWorkingDirectory());
+                .withWorkingDirectory(entry.getWorkingDirectory())
+                .withEnvironmentVariables(entry.getEnvironmentVariables().orElse(Collections.emptyList()))
+                .withInterpolatedValues(entry.getValues());
 
         return new DownloadStrategy(command);
     }

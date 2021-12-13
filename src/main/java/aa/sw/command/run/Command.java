@@ -8,11 +8,16 @@ import lombok.Value;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -25,6 +30,7 @@ public class Command {
     Optional<String> workingDirectory;
     List<String> parameters;
     List<String> commandAndArgs;
+    Map<String, String> environmentVariables;
 
     public static Command parse(final List<String> parameters) {
         requireNonNull(parameters);
@@ -74,46 +80,6 @@ public class Command {
                 .build();
     }
 
-    public Command withInterpolatedValues(final Optional<Map<String, String>> values) {
-        requireNonNull(values);
-
-        return values.map(this::withInterpolatedValues)
-                .orElse(this);
-    }
-
-    public Command withInterpolatedValues(final Map<String, String> values) {
-        requireNonNull(values);
-
-        return toBuilder()
-                .parameters(withInterpolatedValues(parameters, values))
-                .commandAndArgs(withInterpolatedValues(commandAndArgs, values))
-                .build();
-    }
-
-    private static List<String> withInterpolatedValues(final List<String> input, final Map<String, String> variables) {
-        requireNonNull(input);
-        requireNonNull(variables);
-
-        final Pattern variablePattern = Pattern.compile("\\$\\{(.+)}");
-
-        final List<String> interpolated = new ArrayList<>(input.size());
-        for (int i = 0, size = input.size(); i < size; i++) {
-            final String text = input.get(i);
-            interpolated.add(text);
-
-            final Matcher matcher = variablePattern.matcher(text);
-            if (matcher.find()) {
-                final String variable = matcher.group(1);
-                final String value = variables.get(variable);
-                if (value != null) {
-                    interpolated.set(i, text.replace("${" + variable + "}", value));
-                }
-            }
-        }
-
-        return interpolated;
-    }
-
     public Command withWorkspace(final String workspace) {
         requireNonNull(workspace);
 
@@ -130,6 +96,72 @@ public class Command {
                 .build();
     }
 
+    public Command withEnvironmentVariables(final List<String> environmentVariables) {
+        requireNonNull(environmentVariables);
+
+        return toBuilder()
+                .readEnvironmentVariables(environmentVariables)
+                .build();
+    }
+
+    public Command withInterpolatedValues(final Optional<Map<String, String>> values) {
+        requireNonNull(values);
+
+        return values.map(this::withInterpolatedValues)
+                .orElse(this);
+    }
+
+    public Command withInterpolatedValues(final Map<String, String> values) {
+        requireNonNull(values);
+
+        /* Nothing to interpolate */
+        if (values.isEmpty()) {
+            return this;
+        }
+
+        return toBuilder()
+                .parameters(withInterpolatedValues(parameters, values))
+                .commandAndArgs(withInterpolatedValues(commandAndArgs, values))
+                .environmentVariables(withInterpolatedValues(environmentVariables, values))
+                .build();
+    }
+
+    private static List<String> withInterpolatedValues(final List<String> input, final Map<String, String> values) {
+        requireNonNull(input);
+        requireNonNull(values);
+
+        final Pattern variablePattern = Pattern.compile("\\$\\{(.+)}");
+
+        final List<String> interpolated = new ArrayList<>(input.size());
+        for (int i = 0, size = input.size(); i < size; i++) {
+            final String text = input.get(i);
+            interpolated.add(text);
+
+            final Matcher matcher = variablePattern.matcher(text);
+            if (matcher.find()) {
+                final String variable = matcher.group(1);
+                final String value = values.get(variable);
+                if (value != null) {
+                    interpolated.set(i, text.replace("${" + variable + "}", value));
+                }
+            }
+        }
+
+        return List.copyOf(interpolated);
+    }
+
+    private static Map<String, String> withInterpolatedValues(final Map<String, String> input, final Map<String,
+            String> values) {
+        requireNonNull(input);
+        requireNonNull(values);
+
+        return input.entrySet().stream()
+                .collect(Collectors.toUnmodifiableMap(
+                        Map.Entry::getKey,
+                        (e) -> values.getOrDefault(e.getKey(), e.getValue())
+                ));
+    }
+
     public String asString() {
         return String.join("\n", parameters);
     }
@@ -139,14 +171,56 @@ public class Command {
     }
 
     public static class CommandBuilder {
-        private Path workspace = userHomeDirectory();
 
-        public Command build() {
-            return new Command(workspace, workingDirectory, List.copyOf(parameters), List.copyOf(commandAndArgs));
+        public CommandBuilder readEnvironmentVariables(final List<String> environmentVariables) {
+            requireNonNull(environmentVariables);
+
+            final Map<String, String> read = environmentVariables.stream()
+                    .collect(Collectors.toUnmodifiableMap(variable -> variable, this::readEnvironmentVariable));
+            return environmentVariables(read);
         }
 
-        private static Path userHomeDirectory() {
-            return Path.of(System.getProperty("user.home"), "sociable-weaver/workspace");
+        private String readEnvironmentVariable(final String variable) {
+            return Stream.<Function<String, String>>of(System::getenv, System::getProperty)
+                    .map(s -> s.apply(variable))
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        public Command build() {
+            return new Command(
+                    defaultWorkspaceIfNull(workspace),
+                    emptyIfNull(workingDirectory),
+                    unmodifiable(parameters),
+                    unmodifiable(commandAndArgs),
+                    unmodifiable(environmentVariables));
+        }
+
+        private static Path defaultWorkspaceIfNull(final Path workspace) {
+            return Optional.ofNullable(workspace)
+                    .orElseGet(CommandBuilder::defaultWorkspace);
+        }
+
+        private static Path defaultWorkspace() {
+            return Path.of(System.getProperty("user.home"), "sociable-weaver", "workspace").toAbsolutePath();
+        }
+
+        private static <V> Optional<V> emptyIfNull(final Optional<V> source) {
+            return Optional.ofNullable(source)
+                    .orElse(Optional.empty());
+        }
+
+        private static <V> List<V> unmodifiable(final List<V> source) {
+            return Optional.ofNullable(source)
+                    .map(List::copyOf)
+                    .orElse(Collections.emptyList());
+        }
+
+        private static <K, V> Map<K, V> unmodifiable(final Map<K, V> source) {
+            return Optional.ofNullable(source)
+                    .map(Map::copyOf)
+                    .orElse(Collections.emptyMap());
         }
     }
 
