@@ -2,7 +2,6 @@ package aa.sw.command;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 import java.util.Optional;

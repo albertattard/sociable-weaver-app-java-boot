@@ -9,8 +9,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties(AppProperties.class)
 public class SwApp {
 
-	public static void main(final String[] args) {
-		SpringApplication.run(SwApp.class, args);
-	}
+    public static void main(final String[] args) {
+        SpringApplication.run(SwApp.class, args);
+    }
 
 }
