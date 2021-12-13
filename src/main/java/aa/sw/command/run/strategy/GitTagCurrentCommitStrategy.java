@@ -21,8 +21,6 @@ public class GitTagCurrentCommitStrategy implements RunnableEntryExecutionStrate
     public static RunnableEntryExecutionStrategy of(final RunnableEntry entry) {
         requireNonNull(entry);
 
-        final String workspace = entry.getWorkPath();
-        final Optional<String> workingDirectory = entry.getWorkingDirectory();
         final String tag = entry.getParameterAtOrFail(0, "Missing tag");
         final Optional<String> message = entry.getParameterAt(1);
 
@@ -32,8 +30,9 @@ public class GitTagCurrentCommitStrategy implements RunnableEntryExecutionStrate
                 .orElse(String.format("git tag --annotate '%s'", tag));
 
         final Command command = Command.parse(List.of(parameters))
-                .withWorkspace(workspace)
-                .withWorkingDirectory(workingDirectory);
+                .withInterpolatedValues(entry.getValues())
+                .withWorkspace(entry.getWorkPath())
+                .withWorkingDirectory(entry.getWorkingDirectory());
 
         return new GitTagCurrentCommitStrategy(command);
     }

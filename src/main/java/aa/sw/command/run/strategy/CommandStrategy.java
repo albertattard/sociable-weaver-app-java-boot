@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -94,48 +93,6 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
     private void logExitValue(final int exitValue) {
         LOGGER.debug("Command {} finished with exit value {} (expecting {})",
                 CommandFormatter.format(command), exitValue, expectedExitValue);
-    }
-
-    private void waitForTheProcessToFinish(final Process process) {
-        final boolean finished;
-        try {
-            final long waitTimeInSeconds = Math.max(1, commandTimeout.getSeconds());
-            finished = process.waitFor(waitTimeInSeconds, TimeUnit.SECONDS);
-        } catch (final InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Interrupted while waiting for the command to complete", e);
-        }
-
-        if (finished) {
-            final int exitValue = process.exitValue();
-            assertExitValue(exitValue);
-            return;
-        }
-
-        LOGGER.warn("Command took longer than expected. Killing it!");
-        process.destroyForcibly();
-        throw new RuntimeException("Command took longer than expected and was killed");
-    }
-
-    private void assertExitValue(final int exitValue) {
-        if (exitValue == expectedExitValue) {
-            LOGGER.debug("Command finished with expected exit value {}", exitValue);
-        } else if (ignoreErrors) {
-            LOGGER.warn("Command finished with exit value {} while it was expected to finish with {}",
-                    exitValue, expectedExitValue);
-        } else {
-            throw new RuntimeException(
-                    "Command finished with exit value " + exitValue +
-                            " while it was expected to finish with " + expectedExitValue);
-        }
-    }
-
-    public static Builder builder(final String... parameters) {
-        return builder(List.of(parameters));
-    }
-
-    public static Builder builder(final List<String> parameters) {
-        return new Builder(Command.parse(parameters));
     }
 
     public static Builder builder(final Command command) {

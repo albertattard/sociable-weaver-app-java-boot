@@ -24,6 +24,7 @@ public class DownloadStrategy implements RunnableEntryExecutionStrategy {
         final String path = entry.getParameterAtOrFail(1, "Missing file path where the file will be saved");
 
         final Command command = Command.parse(List.of(String.format("curl --location '%s' --output '%s'", link, path)))
+                .withInterpolatedValues(entry.getValues())
                 .withWorkspace(entry.getWorkspace())
                 .withWorkingDirectory(entry.getWorkingDirectory());
 
