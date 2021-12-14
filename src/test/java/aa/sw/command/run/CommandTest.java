@@ -14,97 +14,101 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CommandTest {
 
-    @Test
-    void handlesSingleLineCommandWithArguments() {
-        /* Given */
-        final List<String> parameters = List.of("java -jar hello-world.jar");
+    @Nested
+    class ParseTest {
 
-        /* When */
-        final Command command = Command.parse(parameters);
+        @Test
+        void handlesSingleLineCommandWithArguments() {
+            /* Given */
+            final List<String> parameters = List.of("java -jar hello-world.jar");
 
-        /* Then */
-        final List<String> commandAndArgs = List.of("java", "-jar", "hello-world.jar");
-        assertThat(command)
-                .isEqualTo(create(parameters, commandAndArgs));
-    }
+            /* When */
+            final Command command = Command.parse(parameters);
 
-    @Test
-    void handlesSingleQuotedArguments() {
-        /* Given */
-        final List<String> parameters = List.of("echo 'hello world'");
+            /* Then */
+            final List<String> commandAndArgs = List.of("java", "-jar", "hello-world.jar");
+            assertThat(command)
+                    .isEqualTo(create(parameters, commandAndArgs));
+        }
 
-        /* When */
-        final Command command = Command.parse(parameters);
+        @Test
+        void handlesSingleQuotedArguments() {
+            /* Given */
+            final List<String> parameters = List.of("echo 'hello world'");
 
-        /* Then */
-        final List<String> commandAndArgs = List.of("echo", "hello world");
-        assertThat(command)
-                .isEqualTo(create(parameters, commandAndArgs));
-    }
+            /* When */
+            final Command command = Command.parse(parameters);
 
-    @Test
-    void handlesSingleDoubleQuotedArguments() {
-        /* Given */
-        final List<String> parameters =
-                List.of("curl 'https://github.com/albertattard/' -H 'Accept: application/json'");
+            /* Then */
+            final List<String> commandAndArgs = List.of("echo", "hello world");
+            assertThat(command)
+                    .isEqualTo(create(parameters, commandAndArgs));
+        }
 
-        /* When */
-        final Command command = Command.parse(parameters);
+        @Test
+        void handlesSingleDoubleQuotedArguments() {
+            /* Given */
+            final List<String> parameters =
+                    List.of("curl 'https://github.com/albertattard/' -H 'Accept: application/json'");
 
-        /* Then */
-        final List<String> commandAndArgs =
-                List.of("curl", "https://github.com/albertattard/", "-H", "Accept: application/json");
-        System.out.println(command.getCommandAndArgs());
-        assertThat(command)
-                .isEqualTo(create(parameters, commandAndArgs));
-    }
+            /* When */
+            final Command command = Command.parse(parameters);
 
-    @Test
-    void handlesDoubleQuotedArguments() {
-        /* Given */
-        final List<String> parameters = List.of("echo \"hello world\"");
+            /* Then */
+            final List<String> commandAndArgs =
+                    List.of("curl", "https://github.com/albertattard/", "-H", "Accept: application/json");
+            System.out.println(command.getCommandAndArgs());
+            assertThat(command)
+                    .isEqualTo(create(parameters, commandAndArgs));
+        }
 
-        /* When */
-        final Command command = Command.parse(parameters);
+        @Test
+        void handlesDoubleQuotedArguments() {
+            /* Given */
+            final List<String> parameters = List.of("echo \"hello world\"");
 
-        /* Then */
-        final List<String> commandAndArgs = List.of("echo", "hello world");
-        assertThat(command)
-                .isEqualTo(create(parameters, commandAndArgs));
-    }
+            /* When */
+            final Command command = Command.parse(parameters);
 
-    @Test
-    void handlesMultipleDoubleQuotedArguments() {
-        /* Given */
-        final List<String> parameters =
-                List.of("curl \"https://github.com/albertattard/\" -H \"Accept: application/json\"");
+            /* Then */
+            final List<String> commandAndArgs = List.of("echo", "hello world");
+            assertThat(command)
+                    .isEqualTo(create(parameters, commandAndArgs));
+        }
 
-        /* When */
-        final Command command = Command.parse(parameters);
+        @Test
+        void handlesMultipleDoubleQuotedArguments() {
+            /* Given */
+            final List<String> parameters =
+                    List.of("curl \"https://github.com/albertattard/\" -H \"Accept: application/json\"");
 
-        /* Then */
-        final List<String> commandAndArgs =
-                List.of("curl", "https://github.com/albertattard/", "-H", "Accept: application/json");
-        assertThat(command)
-                .isEqualTo(create(parameters, commandAndArgs));
-    }
+            /* When */
+            final Command command = Command.parse(parameters);
 
-    @Test
-    void handlesDoubleQuotesWithinSingleQuotedArguments() {
-        /* Given */
-        final List<String> parameters = List.of("echo '\"hello world\"'");
+            /* Then */
+            final List<String> commandAndArgs =
+                    List.of("curl", "https://github.com/albertattard/", "-H", "Accept: application/json");
+            assertThat(command)
+                    .isEqualTo(create(parameters, commandAndArgs));
+        }
 
-        /* When */
-        final Command command = Command.parse(parameters);
+        @Test
+        void handlesDoubleQuotesWithinSingleQuotedArguments() {
+            /* Given */
+            final List<String> parameters = List.of("echo '\"hello world\"'");
 
-        /* Then */
-        final List<String> commandAndArgs = List.of("echo", "\"hello world\"");
-        assertThat(command)
-                .isEqualTo(create(parameters, commandAndArgs));
+            /* When */
+            final Command command = Command.parse(parameters);
+
+            /* Then */
+            final List<String> commandAndArgs = List.of("echo", "\"hello world\"");
+            assertThat(command)
+                    .isEqualTo(create(parameters, commandAndArgs));
+        }
     }
 
     @Nested
-    public class InterpolateTest {
+    class InterpolateTest {
 
         @Test
         void interpolatesVariableValues() {
@@ -141,7 +145,7 @@ class CommandTest {
     }
 
     @Nested
-    public class ExecutionDirectoryTest {
+    class ExecutionDirectoryTest {
 
         @Test
         void returnWorkspaceWhenWorkingDirectoryIsNotProvided() {
@@ -175,8 +179,8 @@ class CommandTest {
         }
     }
 
-        @Nested
-    public class FormatCommandTest {
+    @Nested
+    class FormatCommandTest {
 
         @Test
         void formatSingleLineCommand() {
