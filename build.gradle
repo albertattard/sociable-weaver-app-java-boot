@@ -1,39 +1,54 @@
 plugins {
-	id 'java'
-	id "io.freefair.lombok" version "6.2.0"
-	id 'org.springframework.boot' version '2.6.0'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id "java"
+    id "io.freefair.lombok" version "6.2.0"
+    id "info.solidsoft.pitest" version "1.7.0"
+    id "org.springframework.boot" version "2.6.0"
+    id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
 java {
-	toolchain{
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 lombok {
-	getVersion().set("1.18.22")
+    getVersion().set("1.18.22")
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	/* Properties */
-	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    /* Properties */
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-	/* Spring Web */
-	implementation "org.springframework.boot:spring-boot-starter-web"
-	implementation "org.springframework.boot:spring-boot-starter-websocket"
+    /* Spring Web */
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-websocket"
 
-	/* Guava */
-	implementation "com.google.guava:guava:31.0.1-jre"
+    /* Guava */
+    implementation "com.google.guava:guava:31.0.1-jre"
 
-	/* Testing */
-	testImplementation "org.springframework.boot:spring-boot-starter-test"
+    /* Testing */
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testRuntimeOnly "org.pitest:pitest-junit5-plugin:0.15"
 }
 
 test {
-	useJUnitPlatform()
+    useJUnitPlatform()
+}
+
+pitest {
+    pitestVersion = '1.7.0'
+    testPlugin = "junit5"
+    targetClasses = ["aa.sw.*"]
+    timestampedReports = false
+    mutationThreshold = 27
+    coverageThreshold = 40
+}
+
+check {
+    dependsOn "pitest"
 }
