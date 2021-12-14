@@ -2,7 +2,7 @@ plugins {
     id "java"
     id "io.freefair.lombok" version "6.2.0"
     id "info.solidsoft.pitest" version "1.7.0"
-    id "org.springframework.boot" version "2.6.0"
+    id "org.springframework.boot" version "2.6.1"
     id "io.spring.dependency-management" version "1.0.11.RELEASE"
 }
 
@@ -41,7 +41,7 @@ test {
 }
 
 pitest {
-    pitestVersion = '1.7.0'
+    pitestVersion = "1.7.0"
     testPlugin = "junit5"
     targetClasses = ["aa.sw.*"]
     timestampedReports = false
