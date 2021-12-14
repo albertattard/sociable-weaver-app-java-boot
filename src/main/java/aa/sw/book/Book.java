@@ -47,8 +47,11 @@ public class Book {
         }
 
         public Book build() {
-            /* TODO: Add null checks for the rest */
-            return new Book(title, description, List.copyOf(chapters));
+            return new Book(
+                    requireNonNull(title),
+                    requireNonNull(description),
+                    List.copyOf(chapters)
+            );
         }
     }
 

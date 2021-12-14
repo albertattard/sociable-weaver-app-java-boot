@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ChapterTest {
 
     @Nested
-    public class EntryTest {
+    class EntryTest {
 
         @ParameterizedTest
         @ValueSource(strings = { "command", "create", "docker-tag-and-push", "download", "git-apply-patch",

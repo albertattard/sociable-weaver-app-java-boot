@@ -46,8 +46,7 @@ public class Command {
         for (final String line : parameters) {
             for (final char c : line.toCharArray()) {
                 switch (c) {
-                    case '\'':
-                    case '"':
+                    case '\'', '"':
                         if (group == null) {
                             group = Group.of(c);
                             withinGroup = true;
@@ -170,7 +169,7 @@ public class Command {
         return input.entrySet().stream()
                 .collect(Collectors.toUnmodifiableMap(
                         Map.Entry::getKey,
-                        (e) -> values.getOrDefault(e.getKey(), e.getValue())
+                        e -> values.getOrDefault(e.getKey(), e.getValue())
                 ));
     }
 

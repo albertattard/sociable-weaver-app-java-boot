@@ -1,4 +1,4 @@
-package aa.sw.book;
+package aa.sw.common;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,22 +8,21 @@ import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
-/* TODO: Move this class into a more generic package */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Result<T> {
 
     private final T value;
-    private final Throwable error;
+    private final Exception error;
 
     public static <E> Result<E> of(final ResultSupplier<E> supplier) {
         try {
             return value(supplier.get());
-        } catch (final Throwable e) {
+        } catch (final Exception e) {
             return error(e);
         }
     }
 
-    public static <E> Result<E> error(final Throwable error) {
+    public static <E> Result<E> error(final Exception error) {
         requireNonNull(error);
 
         return new Result<>(null, error);
@@ -35,7 +34,7 @@ public class Result<T> {
         return new Result<>(value, null);
     }
 
-    public <V> V map(final Function<T, V> valueMapper, final Function<Throwable, V> errorMapper) {
+    public <V> V map(final Function<T, V> valueMapper, final Function<Exception, V> errorMapper) {
         requireNonNull(valueMapper);
         requireNonNull(errorMapper);
 
@@ -65,7 +64,8 @@ public class Result<T> {
                 : String.valueOf(error);
     }
 
+    @FunctionalInterface
     public interface ResultSupplier<T> {
-        T get() throws Throwable;
+        T get() throws Exception;
     }
 }

@@ -20,7 +20,6 @@ import static java.util.Objects.requireNonNull;
 @JsonDeserialize(builder = Chapter.ChapterBuilder.class)
 public class Chapter {
 
-    /* TODO: Should we have the title and description here too? */
     List<Entry> entries;
 
     @JsonPOJOBuilder(withPrefix = "")
