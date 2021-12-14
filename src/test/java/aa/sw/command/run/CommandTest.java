@@ -3,9 +3,12 @@ package aa.sw.command.run;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -138,6 +141,41 @@ class CommandTest {
     }
 
     @Nested
+    public class ExecutionDirectoryTest {
+
+        @Test
+        void returnWorkspaceWhenWorkingDirectoryIsNotProvided() {
+            /* Given */
+            final Command command = Command.builder()
+                    .workspace(Path.of("workspace"))
+                    .build();
+
+            /* When */
+            final File directory = command.getExecutionDirectory();
+
+            /* Then */
+            assertThat(directory)
+                    .isEqualTo(new File("workspace"));
+        }
+
+        @Test
+        void returnBothWorkspaceAndWorkingDirectory() {
+            /* Given */
+            final Command command = Command.builder()
+                    .workspace(Path.of("workspace"))
+                    .workingDirectory(Optional.of("work-dir"))
+                    .build();
+
+            /* When */
+            final File directory = command.getExecutionDirectory();
+
+            /* Then */
+            assertThat(directory)
+                    .isEqualTo(new File("workspace", "work-dir"));
+        }
+    }
+
+        @Nested
     public class FormatCommandTest {
 
         @Test

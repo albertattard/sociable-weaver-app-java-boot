@@ -44,7 +44,7 @@ class ProcessRunnerTest {
         /* When */
         final ProcessResult result = ProcessRunner.builder()
                 .command(List.of("./run"))
-                .workspace(createWorkingDirectory())
+                .executionDirectory(createWorkingDirectory())
                 .context(context)
                 .build()
                 .run();
@@ -67,7 +67,7 @@ class ProcessRunnerTest {
         /* When */
         final ProcessResult result = ProcessRunner.builder()
                 .command(List.of("./run"))
-                .workspace(createWorkingDirectory())
+                .executionDirectory(createWorkingDirectory())
                 .context(context)
                 .commandTimeout(Duration.ofSeconds(1))
                 .build()
@@ -96,7 +96,7 @@ class ProcessRunnerTest {
         /* When */
         final ProcessResult result = ProcessRunner.builder()
                 .command(List.of("./run"))
-                .workspace(createWorkingDirectory())
+                .executionDirectory(createWorkingDirectory())
                 .context(context)
                 .build()
                 .run();
@@ -119,7 +119,7 @@ class ProcessRunnerTest {
         /* When */
         final ProcessResult result = ProcessRunner.builder()
                 .command(List.of("./run"))
-                .workspace(createWorkingDirectory())
+                .executionDirectory(createWorkingDirectory())
                 .context(context)
                 .build()
                 .run();
@@ -143,7 +143,7 @@ class ProcessRunnerTest {
         /* When */
         final ProcessResult result = ProcessRunner.builder()
                 .command(List.of("./run"))
-                .workspace(createWorkingDirectory())
+                .executionDirectory(createWorkingDirectory())
                 .context(context)
                 .environmentVariables(Map.of("NAME", "Albert and James"))
                 .build()

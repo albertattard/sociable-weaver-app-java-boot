@@ -26,32 +26,25 @@ import static java.util.Objects.requireNonNull;
 public class ProcessRunner {
 
     private final List<String> command;
-    private final File workspace;
-    private final Optional<String> workingDirectory;
+    private final File executionDirectory;
     private final CommandRunnerContext context;
     private final Map<String, String> environmentVariables;
     private final Duration commandTimeout;
 
     public ProcessResult run() {
-        final File directory = getProcessDirectory();
-        if (!directory.exists() && !directory.mkdirs()) {
-            context.appendErrorF("Failed to create working directory: %s", directory);
+        if (!executionDirectory.exists() && !executionDirectory.mkdirs()) {
+            context.appendErrorF("Failed to create working directory: %s", executionDirectory);
             return ProcessResult.notStarted();
         }
 
         final ProcessBuilder builder = new ProcessBuilder(command);
-        builder.directory(directory);
+        builder.directory(executionDirectory);
         builder.environment().putAll(environmentVariables);
         builder.redirectErrorStream(true);
 
         return start(builder)
                 .map(this::handleProcess)
                 .orElse(ProcessResult.notStarted());
-    }
-
-    private File getProcessDirectory() {
-        return workingDirectory.map(name -> new File(workspace, name))
-                .orElse(workspace);
     }
 
     private Optional<Process> start(final ProcessBuilder builder) {
@@ -130,17 +123,20 @@ public class ProcessRunner {
         public ProcessRunner build() {
             return new ProcessRunner(
                     requireNonNull(command),
-                    requireNonNull(workspace),
-                    emptyIfNull(workingDirectory),
+                    defaultDirectoryIfNull(executionDirectory),
                     requireNonNull(context),
                     emptyIfNull(environmentVariables),
                     defaultTimeoutIfNull(commandTimeout)
             );
         }
 
-        private static <T> Optional<T> emptyIfNull(final Optional<T> source) {
+        private static File defaultDirectoryIfNull(final File source) {
             return Optional.ofNullable(source)
-                    .orElse(Optional.empty());
+                    .orElse(defaultDirectory());
+        }
+
+        private static File defaultDirectory() {
+            return new File(System.getProperty("user.home"), "sociable-weaver/workspace").getAbsoluteFile();
         }
 
         private static <K, V> Map<K, V> emptyIfNull(final Map<K, V> source) {

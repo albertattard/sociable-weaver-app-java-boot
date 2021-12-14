@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,6 +165,12 @@ public class Command {
                         Map.Entry::getKey,
                         (e) -> values.getOrDefault(e.getKey(), e.getValue())
                 ));
+    }
+
+    public File getExecutionDirectory() {
+        return workingDirectory.map(workspace::resolve)
+                .orElse(workspace)
+                .toFile();
     }
 
     public String asFormattedString() {
