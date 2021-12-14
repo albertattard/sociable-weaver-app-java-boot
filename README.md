@@ -35,6 +35,44 @@ Gradle
   $ ./gradlew build
   ```
 
+Sonarqube
+
+- Start the local sonarqube server
+
+  ```shell
+  $ docker compose up -d
+  ```
+
+  Open [http://localhost:9000](http://localhost:9000) and log in with, `admin`/`admin` and generate
+  a [security token](http://localhost:9000/account/security/). This will be used to run the `sonarqube` Gradle task
+  locally.
+
+  Two docker images are started, [Sonarqube Community](https://hub.docker.com/_/sonarqube)
+  and [PostgreSQL](https://hub.docker.com/_/postgres), and each uses several volumes, to preserve state between runs.
+
+- Run locally
+
+  You need a [security token](http://localhost:9000/account/security/) to run this command.
+
+  ```shell
+  $ ./gradlew \
+     -Dsonar.login=86df1d07a0fe9c13b16cd0cf0330dc22ee8e90ce \
+     -Dsonar.host.url=http://localhost:9000 \
+      sonarqube
+  ```
+
+- Start the local sonarqube server
+
+  ```shell
+  $ docker compose down
+  ```
+
+- List the volumes
+
+  ```shell
+  $ docker volume ls
+  ```
+
 Git
 
 - Commit changes

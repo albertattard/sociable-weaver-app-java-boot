@@ -1,5 +1,7 @@
 plugins {
     id "java"
+    id "jacoco"
+    id "org.sonarqube" version "3.3"
     id "io.freefair.lombok" version "6.2.0"
     id "info.solidsoft.pitest" version "1.7.0"
     id "org.springframework.boot" version "2.6.1"
@@ -38,6 +40,17 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
 }
 
 pitest {
@@ -48,6 +61,14 @@ pitest {
     mutationThreshold = 27
     coverageThreshold = 40
 }
+
+sonarqube {
+    properties {
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.projectName", "Sociable Weaver - Java/Boot Application"
+    }
+}
+tasks.named('sonarqube').configure { dependsOn test }
 
 check {
     dependsOn "pitest"
