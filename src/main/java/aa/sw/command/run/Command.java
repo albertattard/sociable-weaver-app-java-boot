@@ -96,6 +96,10 @@ public class Command {
                 .build();
     }
 
+    public Command withWorkingDirectory(String workingDirectory) {
+        return withWorkingDirectory(Optional.ofNullable(workingDirectory));
+    }
+
     public Command withEnvironmentVariables(final List<String> environmentVariables) {
         requireNonNull(environmentVariables);
 
@@ -162,12 +166,38 @@ public class Command {
                 ));
     }
 
-    public String asString() {
+    public String asFormattedString() {
+        return formattedWorkingDirectory()
+                .concat(formattedCommandPromptSymbol())
+                .concat(formattedEnvironmentVariables())
+                .concat(formattedCommand());
+    }
+
+    private String formattedWorkingDirectory() {
+        return workingDirectory
+                .map(w -> w.concat(" "))
+                .orElse("");
+    }
+
+    private String formattedCommandPromptSymbol() {
+        return "$ ";
+    }
+
+    private String formattedEnvironmentVariables() {
+        return environmentVariables.
+                entrySet()
+                .stream()
+                /* TODO: How should we handle sensitive values like passwords or keys? */
+                .map(e -> String.format("%s='%s' ", e.getKey(), e.getValue()))
+                .collect(Collectors.joining());
+    }
+
+    private String formattedCommand() {
         return String.join("\n", parameters);
     }
 
     public String toString() {
-        return asString();
+        return asFormattedString();
     }
 
     public static class CommandBuilder {
@@ -185,7 +215,7 @@ public class Command {
                     .map(s -> s.apply(variable))
                     .filter(Objects::nonNull)
                     .findFirst()
-                    .orElse(null);
+                    .orElse("");
         }
 
         public Command build() {

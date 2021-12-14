@@ -3,7 +3,6 @@ package aa.sw.command.run.strategy;
 import aa.sw.command.CommandResult;
 import aa.sw.command.RunnableEntry;
 import aa.sw.command.run.Command;
-import aa.sw.command.run.CommandFormatter;
 import aa.sw.command.run.CommandRunnerContext;
 import aa.sw.command.run.ProcessResult;
 import aa.sw.command.run.ProcessRunner;
@@ -33,14 +32,15 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
                 .orElseThrow(() -> new IllegalArgumentException("Missing command"));
 
         final Command command = Command.parse(parameters)
-                .withWorkspace(entry.getWorkPath())
+                .withWorkspace(entry.getWorkspace())
                 .withWorkingDirectory(entry.getWorkingDirectory())
+                .withEnvironmentVariables(entry.getEnvironmentVariables().orElse(Collections.emptyList()))
                 .withInterpolatedValues(entry.getValues());
 
         return new Builder(command)
                 .ignoreErrors(entry.getIgnoreErrors().orElse(false))
                 .expectedExitValue(entry.getExpectedExitValue().orElse(0))
-                .commandTimeout(entry.getCommandTimeout().orElse(Duration.ofMinutes(5)))
+                .commandTimeout(entry.getCommandTimeout().orElse(Duration.ofSeconds(5)))
                 .build();
     }
 
@@ -55,7 +55,7 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
 
     @Override
     public CommandResult execute(final CommandRunnerContext context) {
-        context.appendLine(CommandFormatter.format(command));
+        context.appendLine(command.asFormattedString());
 
         return ProcessRunner.builder()
                 .context(context)
@@ -86,8 +86,7 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
     }
 
     private void logExitValue(final int exitValue) {
-        LOGGER.debug("Command {} finished with exit value {} (expecting {})",
-                CommandFormatter.format(command), exitValue, expectedExitValue);
+        LOGGER.debug("Command {} finished with exit value {} (expecting {})", command, exitValue, expectedExitValue);
     }
 
     public static Builder builder(final Command command) {

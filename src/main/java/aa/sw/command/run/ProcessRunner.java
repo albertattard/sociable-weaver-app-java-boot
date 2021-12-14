@@ -1,7 +1,8 @@
 package aa.sw.command.run;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NonNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,21 +19,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Objects.requireNonNull;
+
 @Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProcessRunner {
 
-    @NonNull
     private final List<String> command;
-    @NonNull
     private final File workspace;
-    @Builder.Default
-    private final Optional<String> workingDirectory = Optional.empty();
-    @NonNull
+    private final Optional<String> workingDirectory;
     private final CommandRunnerContext context;
-    @Builder.Default
-    private final Map<String, String> environmentVariables = Collections.emptyMap();
-    @Builder.Default
-    private final Duration commandTimeout = Duration.ofSeconds(5);
+    private final Map<String, String> environmentVariables;
+    private final Duration commandTimeout;
 
     public ProcessResult run() {
         final File directory = getProcessDirectory();
@@ -125,6 +123,34 @@ public class ProcessRunner {
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
             context.appendError("Interrupted while waiting for the output executor to finish", e);
+        }
+    }
+
+    public static class ProcessRunnerBuilder {
+        public ProcessRunner build() {
+            return new ProcessRunner(
+                    requireNonNull(command),
+                    requireNonNull(workspace),
+                    emptyIfNull(workingDirectory),
+                    requireNonNull(context),
+                    emptyIfNull(environmentVariables),
+                    defaultTimeoutIfNull(commandTimeout)
+            );
+        }
+
+        private static <T> Optional<T> emptyIfNull(final Optional<T> source) {
+            return Optional.ofNullable(source)
+                    .orElse(Optional.empty());
+        }
+
+        private static <K, V> Map<K, V> emptyIfNull(final Map<K, V> source) {
+            return Optional.ofNullable(source)
+                    .orElse(Collections.emptyMap());
+        }
+
+        private static Duration defaultTimeoutIfNull(final Duration commandTimeout) {
+            return Optional.ofNullable(commandTimeout)
+                    .orElse(Duration.ofSeconds(5));
         }
     }
 }
