@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,7 +40,7 @@ public class Command {
 
         final List<String> commandAndArgs = new ArrayList<>();
         final StringBuilder buffer = new StringBuilder();
-        boolean spacesAreIncludedInArg = false;
+        boolean withinGroup = false;
         Group group = null;
 
         for (final String line : parameters) {
@@ -48,18 +50,23 @@ public class Command {
                     case '"':
                         if (group == null) {
                             group = Group.of(c);
-                            spacesAreIncludedInArg = true;
+                            withinGroup = true;
                         } else if (group.matches(c)) {
-                            spacesAreIncludedInArg = false;
+                            withinGroup = false;
                             group = null;
                         } else {
                             buffer.append(c);
                         }
                         break;
-                    case ' ':
-                        if (spacesAreIncludedInArg) {
+                    case '\\':
+                        if (withinGroup) {
                             buffer.append(c);
-                        } else {
+                        }
+                        break;
+                    case ' ':
+                        if (withinGroup) {
+                            buffer.append(c);
+                        } else if (buffer.length() > 0) {
                             commandAndArgs.add(buffer.toString());
                             buffer.setLength(0);
                         }
@@ -212,8 +219,15 @@ public class Command {
         public CommandBuilder readEnvironmentVariables(final List<String> environmentVariables) {
             requireNonNull(environmentVariables);
 
-            final Map<String, String> read = environmentVariables.stream()
-                    .collect(Collectors.toUnmodifiableMap(variable -> variable, this::readEnvironmentVariable));
+            final Collector<String, ?, LinkedHashMap<String, String>> collector =
+                    Collectors.toMap(
+                            Function.identity(),
+                            this::readEnvironmentVariable,
+                            (u, v) -> v, /* Reuse the existing value in case of duplicates */
+                            LinkedHashMap::new
+                    );
+
+            final Map<String, String> read = environmentVariables.stream().collect(collector);
             return environmentVariables(read);
         }
 
@@ -256,7 +270,8 @@ public class Command {
 
         private static <K, V> Map<K, V> unmodifiable(final Map<K, V> source) {
             return Optional.ofNullable(source)
-                    .map(Map::copyOf)
+                    /* Do not use Map.copyOf() as we need to preserve the order */
+                    .map(Collections::unmodifiableMap)
                     .orElse(Collections.emptyMap());
         }
     }

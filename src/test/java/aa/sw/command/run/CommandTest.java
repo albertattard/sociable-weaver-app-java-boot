@@ -105,6 +105,28 @@ class CommandTest {
             assertThat(command)
                     .isEqualTo(create(parameters, commandAndArgs));
         }
+
+        @Test
+        void handleMultiLineCommandWithArguments() {
+            /* Given */
+            final List<String> parameters = List.of(
+                    "hub create \\",
+                    "  --private \\",
+                    "  --description 'Hello World Application (Java + Git + Gradle + Docker + GitHub Actions)' \\",
+                    "  'programming--hello-world'"
+            );
+
+            /* When */
+            final Command command = Command.parse(parameters);
+
+            /* Then */
+            final List<String> expected = List.of("hub", "create",
+                    "--private",
+                    "--description", "Hello World Application (Java + Git + Gradle + Docker + GitHub Actions)",
+                    "programming--hello-world");
+            assertThat(command.getCommandAndArgs())
+                    .isEqualTo(expected);
+        }
     }
 
     @Nested
