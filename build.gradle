@@ -58,6 +58,7 @@ pitest {
     testPlugin = "junit5"
     targetClasses = ["aa.sw.*"]
     timestampedReports = false
+    outputFormats = ["xml"]
     mutationThreshold = 27
     coverageThreshold = 40
 }
