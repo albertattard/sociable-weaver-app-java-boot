@@ -72,7 +72,7 @@ public class Chapter {
         Duration commandTimeout;
 
         public boolean isRunnable() {
-            return RUNNABLE_TYPES.contains(type);
+            return type != null && RUNNABLE_TYPES.contains(type);
         }
 
         private static Set<String> createRunnableTypesSet() {

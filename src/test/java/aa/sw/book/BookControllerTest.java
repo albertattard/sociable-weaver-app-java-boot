@@ -29,6 +29,7 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,7 +50,7 @@ class BookControllerTest {
         void returnBookWhenFolderExistsAndValid() throws Exception {
             /* Given */
             final Path bookPath = Path.of("path-to-book");
-            final Map<String, ?> params = Map.of("bookPath", bookPath);
+            final Map<String, Object> params = Map.of("bookPath", bookPath);
             final Book book = Book.builder()
                     .title("Test Book")
                     .description("Test Description")
@@ -78,7 +79,7 @@ class BookControllerTest {
         void returnClientErrorWhenFolderDoesNotExists() throws Exception {
             /* Given */
             final Path bookPath = Path.of("path-to-book");
-            final Map<String, ?> params = Map.of("bookPath", bookPath);
+            final Map<String, Object> params = Map.of("bookPath", bookPath);
             when(service.openBook(bookPath)).thenReturn(Result.error(new FileNotFoundException()));
 
             /* When */
@@ -93,7 +94,7 @@ class BookControllerTest {
         void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
             /* Given */
             final Path bookPath = Path.of("path-to-book");
-            final Map<String, ?> params = Map.of("bookPath", bookPath);
+            final Map<String, Object> params = Map.of("bookPath", bookPath);
             when(service.openBook(bookPath)).thenReturn(Result.error(new Exception("Simulating an error")));
 
             /* When */
@@ -104,7 +105,7 @@ class BookControllerTest {
                     .andExpect(jsonPath("message", is("Encountered an unexpected error")));
         }
 
-        private ResultActions makeOpenBookRequest(final Map<String, ?> params) throws Exception {
+        private ResultActions makeOpenBookRequest(final Map<String, Object> params) throws Exception {
             return mockMvc.perform(createGetRequest("/api/book/open", params));
         }
     }
@@ -115,9 +116,9 @@ class BookControllerTest {
         @Test
         void returnChapterWhenExistsAndValid() throws Exception {
             /* Given */
-            final Path bookPath = Path.of("src/test/resources/fixtures/books");
+            final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
-            final Map<String, ?> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             final Chapter chapter = Chapter.builder()
                     .entry(createEntry())
                     .entry(createEntry())
@@ -135,9 +136,9 @@ class BookControllerTest {
         @Test
         void returnClientErrorWhenChapterDoesNotExists() throws Exception {
             /* Given */
-            final Path bookPath = Path.of("src/test/resources/fixtures/books");
+            final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
-            final Map<String, ?> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             when(service.readChapter(bookPath, chapterPath))
                     .thenReturn(Result.error(new FileNotFoundException("Simulating an error")));
 
@@ -152,9 +153,9 @@ class BookControllerTest {
         @Test
         void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
             /* Given */
-            final Path bookPath = Path.of("src/test/resources/fixtures/books");
+            final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
-            final Map<String, ?> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             when(service.readChapter(bookPath, chapterPath))
                     .thenReturn(Result.error(new Exception("Simulating an error")));
 
@@ -166,34 +167,116 @@ class BookControllerTest {
                     .andExpect(jsonPath("message", is("Encountered an unexpected error")));
         }
 
-        private Chapter.Entry createEntry() {
-            return Chapter.Entry.builder().id(UUID.randomUUID()).type("something").build();
-        }
-
-        private ResultActions makeReadChapterRequest(final Map<String, ?> params) throws Exception {
+        private ResultActions makeReadChapterRequest(final Map<String, Object> params) throws Exception {
             return mockMvc.perform(createGetRequest("/api/book/read-chapter", params));
         }
     }
 
+    @Nested
+    class SaveEntryTest {
+
+        @Test
+        void saveAndReturnEntry() throws Exception {
+            /* Given */
+            final Path bookPath = Path.of("path-to-book");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
+            final Chapter.Entry entry = createEntry();
+            when(service.saveEntry(bookPath, chapterPath, entry))
+                    .thenReturn(Result.value(entry));
+
+            /* When */
+            final ResultActions result = makeSaveEntryRequest(params, entry);
+
+            /* Then */
+            result.andExpect(status().isOk())
+                    .andExpect(jsonPath("id", is(entry.getId().toString())));
+        }
+
+        @Test
+        void returnClientErrorWhenEntryDoesNotExists() throws Exception {
+            /* Given */
+            final Path bookPath = Path.of("path-to-book");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
+            final Chapter.Entry entry = createEntry();
+            when(service.saveEntry(bookPath, chapterPath, entry))
+                    .thenReturn(Result.error(new EntryNotFoundException()));
+
+            /* When */
+            final ResultActions result = makeSaveEntryRequest(params, entry);
+
+            /* Then */
+            result.andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("message", is("Entry not found in chapter")));
+        }
+
+        @Test
+        void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
+            /* Given */
+            final Path bookPath = Path.of("path-to-book");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
+            final Chapter.Entry entry = createEntry();
+            when(service.saveEntry(bookPath, chapterPath, entry))
+                    .thenReturn(Result.error(new Exception("Simulating an error")));
+
+            /* When */
+            final ResultActions result = makeSaveEntryRequest(params, entry);
+
+            /* Then */
+            result.andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("message", is("Encountered an unexpected error")));
+        }
+
+        private ResultActions makeSaveEntryRequest(final Map<String, Object> parameters, Chapter.Entry entry) throws Exception {
+            return mockMvc.perform(createPutRequest("/api/book/entry", parameters, entry));
+        }
+    }
+
+    private Chapter.Entry createEntry() {
+        return Chapter.Entry.builder().id(UUID.randomUUID()).type("something").build();
+    }
+
     /* TODO: Move this method into a more generic place */
-    private MockHttpServletRequestBuilder createGetRequest(final String path, final Map<String, ?> params) {
+    private MockHttpServletRequestBuilder createGetRequest(final String path, final Map<String, Object> parameters) {
         final MockHttpServletRequestBuilder builder = get(path);
-        params.forEach((k, v) -> builder.param(k, v.toString()));
+        parameters.forEach((k, v) -> builder.param(k, v.toString()));
         return builder;
     }
 
     /* TODO: Move this method into a more generic place */
-    private MockHttpServletRequestBuilder createPostJsonRequest(final String path, final Map<String, Object> body) {
-        final MediaType APPLICATION_JSON_UTF8 = new MediaType(MediaType.APPLICATION_JSON.getType(),
-                MediaType.APPLICATION_JSON.getSubtype(), StandardCharsets.UTF_8);
+    private MockHttpServletRequestBuilder createPostRequest(final String path,
+                                                            final Map<String, Object> parameters,
+                                                            final Object body) {
+        return populateRequest(post(path), parameters, body);
+    }
 
-        return post(path)
+    /* TODO: Move this method into a more generic place */
+    private MockHttpServletRequestBuilder createPutRequest(final String path,
+                                                           final Map<String, Object> parameters,
+                                                           final Object body) {
+        return populateRequest(put(path), parameters, body);
+    }
+
+    /* TODO: Move this method into a more generic place */
+    private MockHttpServletRequestBuilder populateRequest(final MockHttpServletRequestBuilder builder,
+                                                          final Map<String, Object> parameters,
+                                                          final Object body) {
+        final MediaType APPLICATION_JSON_UTF8 = new MediaType(
+                MediaType.APPLICATION_JSON.getType(),
+                MediaType.APPLICATION_JSON.getSubtype(),
+                StandardCharsets.UTF_8);
+
+        parameters.forEach((k, v) -> builder.param(k, v.toString()));
+
+        return builder
                 .contentType(APPLICATION_JSON_UTF8)
                 .content(toJson(body));
     }
 
     /* TODO: Move this method into a more generic place */
-    private static String toJson(final Map<String, Object> object) {
+    private static String toJson(final Object object) {
         final ObjectMapper mapper = JsonMapper.builder()
                 .configure(SerializationFeature.WRAP_ROOT_VALUE, false)
                 .build();

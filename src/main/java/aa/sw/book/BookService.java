@@ -41,4 +41,12 @@ public class BookService {
             return mapper.readValue(file.toFile(), Chapter.class);
         });
     }
+
+    public Result<Chapter.Entry> saveEntry(final Path bookPath, final Path chapterPath, final Chapter.Entry entry) {
+        requireNonNull(bookPath);
+        requireNonNull(chapterPath);
+        requireNonNull(entry);
+
+        return Result.error(new UnsupportedOperationException("Not yet implemented"));
+    }
 }

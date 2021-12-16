@@ -23,6 +23,6 @@ public class CorsConfiguration implements WebMvcConfigurer {
         LOGGER.debug("Registering allowed origin: '{}'", allowedOrigin);
         registry.addMapping("/**")
                 .allowedOrigins(allowedOrigin)
-                .allowedMethods("GET", "OPTIONS");
+                .allowedMethods("GET", "PUT", "OPTIONS");
     }
 }
