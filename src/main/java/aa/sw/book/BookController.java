@@ -16,19 +16,19 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 @RestController
-@RequestMapping("/api/book")
+@RequestMapping("/api")
 @AllArgsConstructor
 public class BookController {
 
     private final BookService service;
 
-    @GetMapping("/open")
+    @GetMapping("/book")
     public ResponseEntity<?> openBook(@RequestParam("bookPath") final Path bookPath) {
         return service.openBook(bookPath)
                 .map(ResponseEntity::ok, BookController::createOpenErrorResponse);
     }
 
-    @GetMapping("/read-chapter")
+    @GetMapping("/chapter")
     public ResponseEntity<?> readChapter(@RequestParam("bookPath") final Path bookPath,
                                          @RequestParam("chapterPath") final Path chapterPath) {
         return service.readChapter(bookPath, chapterPath)

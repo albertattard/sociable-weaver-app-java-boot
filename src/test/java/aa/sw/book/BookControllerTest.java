@@ -106,7 +106,7 @@ class BookControllerTest {
         }
 
         private ResultActions makeOpenBookRequest(final Map<String, Object> params) throws Exception {
-            return mockMvc.perform(createGetRequest("/api/book/open", params));
+            return mockMvc.perform(createGetRequest("/api/book", params));
         }
     }
 
@@ -168,7 +168,7 @@ class BookControllerTest {
         }
 
         private ResultActions makeReadChapterRequest(final Map<String, Object> params) throws Exception {
-            return mockMvc.perform(createGetRequest("/api/book/read-chapter", params));
+            return mockMvc.perform(createGetRequest("/api/chapter", params));
         }
     }
 
@@ -230,7 +230,7 @@ class BookControllerTest {
         }
 
         private ResultActions makeSaveEntryRequest(final Map<String, Object> parameters, Chapter.Entry entry) throws Exception {
-            return mockMvc.perform(createPutRequest("/api/book/entry", parameters, entry));
+            return mockMvc.perform(createPutRequest("/api/entry", parameters, entry));
         }
     }
 
