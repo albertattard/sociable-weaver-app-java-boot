@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RunnableEntryTest {
@@ -53,6 +54,28 @@ class RunnableEntryTest {
 
             /* Then */
             assertEquals("a\nb\nc\n", text);
+        }
+    }
+
+    @Nested
+    class OptionalValuesTest {
+        @Test
+        void returnEmptyOptionalWhenValuesAreNotSet() {
+            /* Given */
+            final RunnableEntry entry = RunnableEntry.builder().build();
+
+            /* When/Then */
+            assertThat(entry.getName()).isEmpty();
+            assertThat(entry.getWorkingDirectory()).isEmpty();
+            assertThat(entry.getParameters()).isEmpty();
+            assertThat(entry.getVariables()).isEmpty();
+            assertThat(entry.getEnvironmentVariables()).isEmpty();
+            assertThat(entry.getValues()).isEmpty();
+            assertThat(entry.getIgnoreErrors()).isEmpty();
+            assertThat(entry.getPushChanges()).isEmpty();
+            assertThat(entry.getDryRun()).isEmpty();
+            assertThat(entry.getExpectedExitValue()).isEmpty();
+            assertThat(entry.getCommandTimeout()).isEmpty();
         }
     }
 }
