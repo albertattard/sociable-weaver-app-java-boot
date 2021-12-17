@@ -69,7 +69,7 @@ sonarqube {
         property "sonar.projectName", "Sociable Weaver - Java/Boot Application"
     }
 }
-tasks.named('sonarqube').configure { dependsOn check }
+tasks.named("sonarqube").configure { dependsOn check }
 
 check {
     dependsOn "pitest"
