@@ -12,14 +12,28 @@ import aa.sw.command.run.strategy.GitTagCurrentCommitStrategy;
 import aa.sw.command.run.strategy.ReplaceStrategy;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
 @Service
 public class RunnableEntryRunner {
+
+    private final Map<String, Function<RunnableEntry, RunnableEntryExecutionStrategy>> strategiesByName;
+
+    public RunnableEntryRunner() {
+        this(createDefaultStrategies());
+    }
+
+    RunnableEntryRunner(final Map<String, Function<RunnableEntry, RunnableEntryExecutionStrategy>> strategiesByName) {
+        requireNonNull(strategiesByName);
+        this.strategiesByName = Map.copyOf(strategiesByName);
+    }
 
     public CommandResult run(final RunnableEntry entry, final Consumer<String> output) {
         requireNonNull(entry);
@@ -38,6 +52,14 @@ public class RunnableEntryRunner {
                 });
     }
 
+    private Optional<RunnableEntryExecutionStrategy> findStrategy(final RunnableEntry entry) {
+        requireNonNull(entry);
+
+        final String type = entry.getType().toLowerCase(Locale.ROOT);
+        return Optional.ofNullable(strategiesByName.get(type))
+                .map(factory -> factory.apply(entry));
+    }
+
     private CommandResult execute(final RunnableEntryExecutionStrategy strategy, final Consumer<String> output) {
         requireNonNull(strategy);
         requireNonNull(output);
@@ -49,19 +71,16 @@ public class RunnableEntryRunner {
         return strategy.execute(context);
     }
 
-    private Optional<RunnableEntryExecutionStrategy> findStrategy(final RunnableEntry entry) {
-        requireNonNull(entry);
-
-        return switch (entry.getType().toLowerCase(Locale.ROOT)) {
-            case "command" -> Optional.of(CommandStrategy.of(entry));
-            case "create" -> Optional.of(CreateStrategy.of(entry));
-            case "docker-tag-and-push" -> Optional.of(DockerTagAndPushStrategy.of(entry));
-            case "download" -> Optional.of(DownloadStrategy.of(entry));
-            case "git-apply-patch" -> Optional.of(GitApplyPatchStrategy.of(entry));
-            case "git-commit-changes" -> Optional.of(GitCommitChangesStrategy.of(entry));
-            case "git-tag-current-commit" -> Optional.of(GitTagCurrentCommitStrategy.of(entry));
-            case "replace" -> Optional.of(ReplaceStrategy.of(entry));
-            default -> Optional.empty();
-        };
+    private static Map<String, Function<RunnableEntry, RunnableEntryExecutionStrategy>> createDefaultStrategies() {
+        final Map<String, Function<RunnableEntry, RunnableEntryExecutionStrategy>> map = new HashMap<>();
+        map.put("command", CommandStrategy::of);
+        map.put("create", CreateStrategy::of);
+        map.put("docker-tag-and-push", DockerTagAndPushStrategy::of);
+        map.put("download", DownloadStrategy::of);
+        map.put("git-apply-patch", GitApplyPatchStrategy::of);
+        map.put("git-commit-changes", GitCommitChangesStrategy::of);
+        map.put("git-tag-current-commit", GitTagCurrentCommitStrategy::of);
+        map.put("replace", ReplaceStrategy::of);
+        return Map.copyOf(map);
     }
 }

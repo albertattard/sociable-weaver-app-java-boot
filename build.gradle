@@ -58,8 +58,8 @@ pitest {
     testPlugin = "junit5"
     targetClasses = ["aa.sw.*"]
     timestampedReports = false
-    outputFormats = ["xml"]
-    mutationThreshold = 27
+    outputFormats = ["xml", "html"]
+    mutationThreshold = 20
     coverageThreshold = 40
 }
 
@@ -69,7 +69,7 @@ sonarqube {
         property "sonar.projectName", "Sociable Weaver - Java/Boot Application"
     }
 }
-tasks.named('sonarqube').configure { dependsOn test }
+tasks.named('sonarqube').configure { dependsOn check }
 
 check {
     dependsOn "pitest"
