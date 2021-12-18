@@ -55,6 +55,7 @@ class BookControllerTest {
                     .description("Test Description")
                     .chapter("Chapter 1", "Test chapter 1", "chapter-1")
                     .chapter("Chapter 2", "Test chapter 2", "chapter-2")
+                    .bookPath(bookPath)
                     .build();
             when(service.openBook(bookPath)).thenReturn(Result.value(book));
 

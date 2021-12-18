@@ -32,7 +32,8 @@ public class BookService {
             final Path file = Files.isDirectory(bookPath)
                     ? bookPath.resolve("book.json")
                     : bookPath;
-            return reader.readValue(file.toFile(), Book.class);
+            return reader.readValue(file.toFile(), Book.class)
+                    .withBookPath(file);
         });
     }
 

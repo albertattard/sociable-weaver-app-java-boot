@@ -17,6 +17,7 @@ class Fixtures {
             .chapter("Prologue", "The prologue", PROLOGUE_CHAPTER_PATH.toString())
             .chapter("Hello World", "Automation", "01-hello-world.json")
             .chapter("Broken Links", "Test Driven Development", "02-broken-links.json")
+            .bookPath(BOOK_DIRECTORY.resolve("book.json"))
             .build();
 
     static final Chapter.Entry PROLOGUE_ENTRY_1 = Chapter.Entry.builder()
