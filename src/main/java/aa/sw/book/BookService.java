@@ -28,7 +28,7 @@ public class BookService {
     public Result<Book> openBook(final BookPath bookPath) {
         requireNonNull(bookPath);
 
-        return Result.of(() -> reader.readValue(bookPath.getPath().toFile(), Book.class)
+        return Result.of(() -> reader.readValue(bookPath.getFile(), Book.class)
                 .withBookPath(bookPath.getPath()));
     }
 

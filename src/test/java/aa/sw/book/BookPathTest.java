@@ -1,12 +1,10 @@
 package aa.sw.book;
 
-import aa.sw.common.Result;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 class BookPathTest {
 
@@ -34,5 +32,19 @@ class BookPathTest {
         /* Then */
         assertThat(path)
                 .isEqualTo(Fixtures.resolve("book.json"));
+    }
+
+    @Test
+    void returnTheGivenPathAsStringWhenItIsNotADirectory() {
+        /* Given */
+        final Path aPathThatIsNotADirectory = Path.of("not-a-directory");
+        final BookPath bookPath = BookPath.of(aPathThatIsNotADirectory);
+
+        /* When */
+        final String path = bookPath.toString();
+
+        /* Then */
+        assertThat(path)
+                .isEqualTo("not-a-directory");
     }
 }

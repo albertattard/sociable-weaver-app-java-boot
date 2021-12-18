@@ -72,7 +72,8 @@ class BookControllerTest {
                     .andExpect(jsonPath("chapters[0].path", is("chapter-1")))
                     .andExpect(jsonPath("chapters[1].title", is("Chapter 2")))
                     .andExpect(jsonPath("chapters[1].description", is("Test chapter 2")))
-                    .andExpect(jsonPath("chapters[1].path", is("chapter-2")));
+                    .andExpect(jsonPath("chapters[1].path", is("chapter-2")))
+                    .andExpect(jsonPath("bookPath", is("path-to-book")));
         }
 
         @Test
@@ -119,10 +120,7 @@ class BookControllerTest {
             final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            final Chapter chapter = Chapter.builder()
-                    .entry(createEntry())
-                    .entry(createEntry())
-                    .build();
+            final Chapter chapter = Fixtures.PROLOGUE;
             when(service.readChapter(bookPath, chapterPath)).thenReturn(Result.value(chapter));
 
             /* When */

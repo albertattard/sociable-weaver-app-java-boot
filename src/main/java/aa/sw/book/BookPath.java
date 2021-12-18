@@ -3,6 +3,7 @@ package aa.sw.book;
 
 import lombok.Value;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -21,6 +22,10 @@ public class BookPath {
                 : path;
 
         return new BookPath(file);
+    }
+
+    public File getFile() {
+        return path.toFile();
     }
 
     public String toString() {

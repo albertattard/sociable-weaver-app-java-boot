@@ -7,11 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
-import javax.swing.text.html.Option;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
@@ -24,13 +22,15 @@ public class Book {
     String title;
     String description;
     List<Chapter> chapters;
-    Path bookPath;
-
-    public Optional<Path> getBookPath() {
-        return Optional.ofNullable(bookPath);
-    }
+    String bookPath;
 
     public Book withBookPath(final Path bookPath) {
+        requireNonNull(bookPath);
+
+        return withBookPath(bookPath.toString());
+    }
+
+    public Book withBookPath(final String bookPath) {
         requireNonNull(bookPath);
 
         if (bookPath.equals(this.bookPath)) {
@@ -67,10 +67,21 @@ public class Book {
             return this;
         }
 
+        public BookBuilder bookPath(final Path bookPath) {
+            requireNonNull(bookPath);
+
+            return bookPath(bookPath.toString());
+        }
+
+        public BookBuilder bookPath(final String bookPath) {
+            this.bookPath = bookPath;
+            return this;
+        }
+
         public Book build() {
             return new Book(
-                    requireNonNull(title),
-                    requireNonNull(description),
+                    requireNonNull(title, "The book title cannot be null"),
+                    requireNonNull(description, "The book description cannot be null"),
                     List.copyOf(chapters),
                     bookPath
             );
