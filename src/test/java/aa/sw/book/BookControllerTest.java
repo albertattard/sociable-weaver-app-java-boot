@@ -17,13 +17,12 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
 
+import static aa.sw.IoUtils.uncheckedIo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
@@ -282,19 +281,5 @@ class BookControllerTest {
                 .build();
         final ObjectWriter writer = mapper.writer().withDefaultPrettyPrinter();
         return uncheckedIo(() -> writer.writeValueAsString(object));
-    }
-
-    /* TODO: Move this method into a more generic place */
-    private static <T> T uncheckedIo(final IoSupplier<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    /* TODO: Move this method into a more generic place */
-    private interface IoSupplier<T> {
-        T get() throws IOException;
     }
 }

@@ -1,30 +1,30 @@
 package aa.sw.book;
 
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ChapterTest {
 
     @Nested
-    class EntryTest {
+    class IndexOfTest {
 
-        @ParameterizedTest
-        @ValueSource(strings = { "command", "create", "docker-tag-and-push", "download", "git-apply-patch",
-                "git-commit-changes", "git-tag-current-commit", "replace" })
-        void isRunnableTrueForRunnableEntries(final String type) {
+        @Test
+        void returnNegativeOneWhenEntryNotFound() {
             /* Given */
-            final Chapter.Entry entry = Chapter.Entry.builder().type(type).build();
+            final Chapter chapter = Fixtures.PROLOGUE;
+            final UUID idThatDoesNotExists = UUID.fromString("86e03298-367e-48f9-afa8-2d90438f4d2b");
 
             /* When */
-            final boolean isRunnable = entry.isRunnable();
+            final Optional<Chapter.EntryIndex> result = chapter.findEntryWithId(idThatDoesNotExists);
 
             /* Then */
-            assertThat(isRunnable)
-                    .describedAs("")
-                    .isTrue();
+            assertThat(result)
+                    .isEmpty();
         }
     }
 }

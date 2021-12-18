@@ -2,6 +2,7 @@ package aa.sw.book;
 
 import aa.sw.common.Result;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -9,6 +10,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
+import static aa.sw.IoUtils.copyDirectory;
+import static aa.sw.IoUtils.emptyDirectory;
+import static aa.sw.book.Fixtures.prologueFile;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BookServiceTest {
@@ -16,35 +20,28 @@ class BookServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final BookService service = new BookService(mapper);
 
-    private static final Path BOOKS_PATH = Path.of("src/test/resources/fixtures/books");
-
     @Nested
     class OpenBookTest {
 
         @Test
         void openSpecificBook() {
-            final Result<Book> book = service.openBook(BOOKS_PATH.resolve("book.json"));
+            /* Given */
+            final Path bookPath = Fixtures.resolve("book.json");
 
+            /* When */
+            final Result<Book> book = service.openBook(bookPath);
+
+            /* Then */
             assertThat(book)
-                    .isEqualTo(createBookResult());
+                    .isEqualTo(Result.value(Fixtures.BOOK));
         }
 
         @Test
         void openBookFoundInFolder() {
-            final Result<Book> book = service.openBook(BOOKS_PATH);
+            final Result<Book> book = service.openBook(Fixtures.BOOK_DIRECTORY);
 
             assertThat(book)
-                    .isEqualTo(createBookResult());
-        }
-
-        private static Result<Book> createBookResult() {
-            return Result.value(Book.builder()
-                    .title("Programming")
-                    .description("A book about programming")
-                    .chapter("Prologue", "The prologue", "00-prologue.json")
-                    .chapter("Hello World", "Automation", "01-hello-world.json")
-                    .chapter("Broken Links", "Test Driven Development", "02-broken-links.json")
-                    .build());
+                    .isEqualTo(Result.value(Fixtures.BOOK));
         }
     }
 
@@ -53,21 +50,60 @@ class BookServiceTest {
 
         @Test
         void readChapter() {
-            final Result<Chapter> chapter = service.readChapter(BOOKS_PATH, Path.of("00-prologue.json"));
+            final Result<Chapter> chapter = service.readChapter(Fixtures.BOOK_DIRECTORY, Fixtures.PROLOGUE_CHAPTER_PATH);
 
             assertThat(chapter)
-                    .isEqualTo(Result.value(Chapter.builder()
-                            .entry(Chapter.Entry.builder()
-                                    .type("chapter")
-                                    .id(UUID.fromString("3a50daae-ab81-426f-a118-b505e7eecb49"))
-                                    .parameters(List.of("Prologue"))
-                                    .build())
-                            .entry(Chapter.Entry.builder()
-                                    .type("markdown")
-                                    .id(UUID.fromString("483214f8-fc66-4a3a-b8dc-26401ac6a608"))
-                                    .parameters(List.of("We make mistakes, and we make more mistakes, and some more, " +
-                                            "and that's how we learn.")).build())
-                            .build()));
+                    .isEqualTo(Result.value(Fixtures.PROLOGUE));
         }
     }
+
+    @Nested
+    class SaveEntryTest {
+
+        private static final Path BOOK_DIRECTORY = Path.of("build/fixtures/books");
+
+        @BeforeEach
+        void setUp() {
+            emptyDirectory(BOOK_DIRECTORY);
+            copyDirectory(Fixtures.BOOK_DIRECTORY, BOOK_DIRECTORY);
+        }
+
+        @Test
+        void returnsErrorWhenEntryNotFoundInChapter() {
+            /* Given */
+            final Chapter.Entry entry = Fixtures.PROLOGUE_ENTRY_2.toBuilder()
+                    .id(UUID.randomUUID())
+                    .build();
+
+            /* When */
+            final Result<Chapter.Entry> result = service.saveEntry(BOOK_DIRECTORY, Fixtures.PROLOGUE_CHAPTER_PATH, entry);
+
+            /* Then */
+            assertThat(result)
+                    .isEqualTo(Result.error(new EntryNotFoundException()));
+        }
+
+        @Test
+        void saveAndReturnTheWrittenEntry() throws Exception {
+            /* Given */
+            final Chapter.Entry updatedEntry = Fixtures.PROLOGUE_ENTRY_2.toBuilder()
+                    .parameters(List.of("I make mistakes, and I make more mistakes, and some more, and that's how I learn."))
+                    .build();
+
+            /* When */
+            final Result<Chapter.Entry> result = service.saveEntry(BOOK_DIRECTORY, Fixtures.PROLOGUE_CHAPTER_PATH, updatedEntry);
+
+            /* Then */
+            assertThat(result)
+                    .isEqualTo(Result.value(updatedEntry));
+
+            final Chapter chapter = mapper.readValue(prologueFile(BOOK_DIRECTORY), Chapter.class);
+            assertThat(chapter)
+                    .isEqualTo(Chapter.builder()
+                            .entry(Fixtures.PROLOGUE_ENTRY_1)
+                            .entry(updatedEntry)
+                            .build());
+        }
+    }
+
 }

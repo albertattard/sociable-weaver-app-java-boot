@@ -43,9 +43,27 @@ public class Result<T> {
                 : errorMapper.apply(error);
     }
 
+    public <V> Result<V> then(final ResultFunction<T, V> mapper) {
+        requireNonNull(mapper);
+
+        return error == null
+                ? Result.of(() -> mapper.apply(value))
+                : Result.error(error);
+    }
+
+    public <V> Result<V> flatThen(final Function<T, Result<V>> mapper) {
+        requireNonNull(mapper);
+
+        return error == null
+                ? mapper.apply(value)
+                : Result.error(error);
+    }
+
     @Override
     public boolean equals(final Object object) {
-        if (this == object) { return true; }
+        if (this == object) {
+            return true;
+        }
         if (object == null || getClass() != object.getClass()) return false;
 
         final Result<?> other = (Result<?>) object;
@@ -67,5 +85,10 @@ public class Result<T> {
     @FunctionalInterface
     public interface ResultSupplier<T> {
         T get() throws Exception;
+    }
+
+    @FunctionalInterface
+    public interface ResultFunction<V, R> {
+        R apply(V value) throws Exception;
     }
 }
