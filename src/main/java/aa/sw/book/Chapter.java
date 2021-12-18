@@ -66,7 +66,6 @@ public class Chapter {
         Boolean ignoreErrors;
         Boolean pushChanges;
         Boolean dryRun;
-        Boolean visible;
         Boolean sensitive;
         Integer expectedExitValue;
         Duration commandTimeout;
