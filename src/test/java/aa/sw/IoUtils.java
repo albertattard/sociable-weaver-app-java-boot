@@ -18,12 +18,23 @@ public class IoUtils {
         requireNonNull(source);
         requireNonNull(destination);
 
+        ensureParentDirectoryExists(destination);
+
         uncheckedIo(() -> Files.walk(source)
                 .forEach(a -> {
-                    Path b = destination.resolve(source.relativize(a));
+                    final Path b = destination.resolve(source.relativize(a));
                     uncheckedIo(() -> Files.copy(a, b));
                 })
         );
+    }
+
+    private static void ensureParentDirectoryExists(final Path path) {
+        requireNonNull(path);
+
+        final Path parent = path.toAbsolutePath().getParent();
+        if (!Files.isDirectory(parent)) {
+            uncheckedIo(() -> Files.createDirectories(parent));
+        }
     }
 
     public static void emptyDirectory(final Path directory) {
@@ -35,8 +46,6 @@ public class IoUtils {
                         .sorted(Comparator.reverseOrder())
                         .forEach(IoUtils::delete);
             }
-
-            // Files.createDirectories(directory);
         });
     }
 
