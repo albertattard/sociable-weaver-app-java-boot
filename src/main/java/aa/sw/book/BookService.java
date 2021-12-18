@@ -41,23 +41,25 @@ public class BookService {
         requireNonNull(entry);
 
         return readChapter(chapterPath)
-                .flatThen(chapter ->
-                        Result.of(() -> indexOfEntryInChapter(entry, chapter))
-                                .then(index -> chapter.swapEntryAt(index, entry))
-                                .then((updated) -> writeChapter(chapterPath, updated))
-                                .flatThen(this::readChapter)
-                                .then(a -> a.findEntryWithId(entry.getId()))
-                                .then(a -> a.map(Chapter.EntryIndex::getEntry)
-                                        .orElseThrow(() -> new RuntimeException("The entry was not found in file after it was saved"))));
+                .then(chapter -> indexOfEntryInChapter(entry, chapter))
+                .then(pair -> pair.chapter.swapEntryAt(pair.index, entry))
+                .then(updated -> writeChapter(chapterPath, updated))
+                .flatThen(this::readChapter)
+                .then(chapter -> chapter.findEntryWithId(entry.getId()))
+                .then(entryIndex -> entryIndex.map(Chapter.EntryIndex::getEntry)
+                        .orElseThrow(() -> new RuntimeException("The entry was not found in file after it was saved")));
     }
 
-    private static int indexOfEntryInChapter(final Chapter.Entry entry, final Chapter chapter) {
+    private static ChapterEntryIndex indexOfEntryInChapter(final Chapter.Entry entry, final Chapter chapter) {
+        requireNonNull(entry);
+        requireNonNull(chapter);
+
         final int index = chapter.indexOf(entry);
         if (index == -1) {
             throw new EntryNotFoundException();
         }
 
-        return index;
+        return new ChapterEntryIndex(chapter, index);
     }
 
     private ChapterPath writeChapter(final ChapterPath chapterPath, final Chapter chapter) throws IOException {
@@ -67,4 +69,6 @@ public class BookService {
         writer.writeValue(chapterPath.getFile(), chapter);
         return chapterPath;
     }
+
+    private record ChapterEntryIndex(Chapter chapter, int index) { }
 }
