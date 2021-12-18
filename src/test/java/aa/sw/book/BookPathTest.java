@@ -1,6 +1,8 @@
 package aa.sw.book;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.nio.file.Path;
 
@@ -32,6 +34,19 @@ class BookPathTest {
         /* Then */
         assertThat(path)
                 .isEqualTo(Fixtures.resolve("book.json"));
+    }
+
+    @Test
+    void returnTheBookDirectory() {
+        /* Given */
+        final BookPath bookPath = BookPath.of(Fixtures.BOOK_DIRECTORY);
+
+        /* When */
+        final Path directory = bookPath.getDirectory();
+
+        /* Then */
+        assertThat(directory)
+                .isEqualTo(Fixtures.BOOK_DIRECTORY);
     }
 
     @Test

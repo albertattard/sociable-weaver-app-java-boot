@@ -32,27 +32,17 @@ public class BookService {
                 .withBookPath(bookPath.getPath()));
     }
 
-    public Result<Chapter> readChapter(final Path bookPath, final Path chapterPath) {
-        requireNonNull(bookPath);
+    public Result<Chapter> readChapter(final ChapterPath chapterPath) {
         requireNonNull(chapterPath);
 
-        return Result.of(() -> {
-            final Path directory = Files.isDirectory(bookPath)
-                    ? bookPath
-                    : bookPath.getParent();
-
-            final Path file = directory.resolve(chapterPath);
-
-            return reader.readValue(file.toFile(), Chapter.class);
-        });
+        return Result.of(() -> reader.readValue(chapterPath.getFile(), Chapter.class));
     }
 
-    public Result<Chapter.Entry> saveEntry(final Path bookPath, final Path chapterPath, final Chapter.Entry entry) {
-        requireNonNull(bookPath);
+    public Result<Chapter.Entry> saveEntry(final ChapterPath chapterPath, final Chapter.Entry entry) {
         requireNonNull(chapterPath);
         requireNonNull(entry);
 
-        return readChapter(bookPath, chapterPath)
+        return readChapter(chapterPath)
                 .flatThen(chapter -> {
                     final int index = chapter.indexOf(entry);
                     if (index == -1) {
@@ -62,19 +52,13 @@ public class BookService {
                     final Chapter updated = chapter
                             .swapEntryAt(index, entry);
 
-                    final Path directory = Files.isDirectory(bookPath)
-                            ? bookPath
-                            : bookPath.getParent();
-
-                    final Path file = directory.resolve(chapterPath);
-
                     try {
-                        writer.writeValue(file.toFile(), updated);
+                        writer.writeValue(chapterPath.getFile(), updated);
                     } catch (final IOException e) {
                         return Result.error(e);
                     }
 
-                    return readChapter(bookPath, chapterPath)
+                    return readChapter(chapterPath)
                             .then(a -> a.findEntryWithId(entry.getId()))
                             .then(a -> a.map(Chapter.EntryIndex::getEntry)
                                     .orElseThrow(() -> new RuntimeException("")));

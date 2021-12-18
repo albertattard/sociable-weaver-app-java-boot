@@ -121,7 +121,7 @@ class BookControllerTest {
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             final Chapter chapter = Fixtures.PROLOGUE;
-            when(service.readChapter(bookPath, chapterPath)).thenReturn(Result.value(chapter));
+            when(service.readChapter(ChapterPath.of(bookPath, chapterPath))).thenReturn(Result.value(chapter));
 
             /* When */
             final ResultActions result = makeReadChapterRequest(params);
@@ -137,7 +137,7 @@ class BookControllerTest {
             final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            when(service.readChapter(bookPath, chapterPath))
+            when(service.readChapter(ChapterPath.of(bookPath, chapterPath)))
                     .thenReturn(Result.error(new FileNotFoundException("Simulating an error")));
 
             /* When */
@@ -154,7 +154,7 @@ class BookControllerTest {
             final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            when(service.readChapter(bookPath, chapterPath))
+            when(service.readChapter(ChapterPath.of(bookPath, chapterPath)))
                     .thenReturn(Result.error(new Exception("Simulating an error")));
 
             /* When */
@@ -180,7 +180,7 @@ class BookControllerTest {
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             final Chapter.Entry entry = createEntry();
-            when(service.saveEntry(bookPath, chapterPath, entry))
+            when(service.saveEntry(ChapterPath.of(bookPath, chapterPath), entry))
                     .thenReturn(Result.value(entry));
 
             /* When */
@@ -198,7 +198,7 @@ class BookControllerTest {
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             final Chapter.Entry entry = createEntry();
-            when(service.saveEntry(bookPath, chapterPath, entry))
+            when(service.saveEntry(ChapterPath.of(bookPath, chapterPath), entry))
                     .thenReturn(Result.error(new EntryNotFoundException()));
 
             /* When */
@@ -216,7 +216,7 @@ class BookControllerTest {
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             final Chapter.Entry entry = createEntry();
-            when(service.saveEntry(bookPath, chapterPath, entry))
+            when(service.saveEntry(ChapterPath.of(bookPath, chapterPath), entry))
                     .thenReturn(Result.error(new Exception("Simulating an error")));
 
             /* When */

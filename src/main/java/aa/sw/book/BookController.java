@@ -31,7 +31,7 @@ public class BookController {
     @GetMapping("/chapter")
     public ResponseEntity<?> readChapter(@RequestParam("bookPath") final Path bookPath,
                                          @RequestParam("chapterPath") final Path chapterPath) {
-        return service.readChapter(bookPath, chapterPath)
+        return service.readChapter(ChapterPath.of(bookPath, chapterPath))
                 .map(ResponseEntity::ok, BookController::createReadChapterErrorResponse);
     }
 
@@ -39,7 +39,7 @@ public class BookController {
     public ResponseEntity<?> saveEntry(@RequestParam("bookPath") final Path bookPath,
                                        @RequestParam("chapterPath") final Path chapterPath,
                                        @RequestBody final Chapter.Entry entry) {
-        return service.saveEntry(bookPath, chapterPath, entry)
+        return service.saveEntry(ChapterPath.of(bookPath, chapterPath), entry)
                 .map(ResponseEntity::ok, BookController::createSaveEntryErrorResponse);
     }
 

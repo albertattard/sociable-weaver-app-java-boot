@@ -9,12 +9,14 @@ class Fixtures {
 
     static final Path BOOK_DIRECTORY = Path.of("src/test/resources/fixtures/books");
 
-    static final Path PROLOGUE_CHAPTER_PATH = Path.of("00-prologue.json");
+    static final Path PROLOGUE_FILE = Path.of("00-prologue.json");
+
+    static final ChapterPath PROLOGUE_CHAPTER_PATH = ChapterPath.of(BOOK_DIRECTORY, PROLOGUE_FILE);
 
     static final Book BOOK = Book.builder()
             .title("Programming")
             .description("A book about programming")
-            .chapter("Prologue", "The prologue", PROLOGUE_CHAPTER_PATH.toString())
+            .chapter("Prologue", "The prologue", PROLOGUE_FILE.toString())
             .chapter("Hello World", "Automation", "01-hello-world.json")
             .chapter("Broken Links", "Test Driven Development", "02-broken-links.json")
             .bookPath(BOOK_DIRECTORY.resolve("book.json"))
@@ -46,6 +48,6 @@ class Fixtures {
     }
 
     static File prologueFile(final Path bookDirectory) {
-        return bookDirectory.resolve(PROLOGUE_CHAPTER_PATH).toFile();
+        return bookDirectory.resolve(PROLOGUE_FILE).toFile();
     }
 }

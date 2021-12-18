@@ -42,7 +42,7 @@ class BookServiceTest {
 
         @Test
         void readChapter() {
-            final Result<Chapter> chapter = service.readChapter(Fixtures.BOOK_DIRECTORY, Fixtures.PROLOGUE_CHAPTER_PATH);
+            final Result<Chapter> chapter = service.readChapter(Fixtures.PROLOGUE_CHAPTER_PATH);
 
             assertThat(chapter)
                     .isEqualTo(Result.value(Fixtures.PROLOGUE));
@@ -68,7 +68,7 @@ class BookServiceTest {
                     .build();
 
             /* When */
-            final Result<Chapter.Entry> result = service.saveEntry(BOOK_DIRECTORY, Fixtures.PROLOGUE_CHAPTER_PATH, entry);
+            final Result<Chapter.Entry> result = service.saveEntry(ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE), entry);
 
             /* Then */
             assertThat(result)
@@ -83,7 +83,7 @@ class BookServiceTest {
                     .build();
 
             /* When */
-            final Result<Chapter.Entry> result = service.saveEntry(BOOK_DIRECTORY, Fixtures.PROLOGUE_CHAPTER_PATH, updatedEntry);
+            final Result<Chapter.Entry> result = service.saveEntry(ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE), updatedEntry);
 
             /* Then */
             assertThat(result)
