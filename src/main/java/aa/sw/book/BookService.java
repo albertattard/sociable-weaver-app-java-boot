@@ -41,25 +41,30 @@ public class BookService {
         requireNonNull(entry);
 
         return readChapter(chapterPath)
-                .flatThen(chapter -> {
-                    final int index = chapter.indexOf(entry);
-                    if (index == -1) {
-                        return Result.error(new EntryNotFoundException());
-                    }
+                .flatThen(chapter ->
+                        Result.of(() -> indexOfEntryInChapter(entry, chapter))
+                                .then(index -> chapter.swapEntryAt(index, entry))
+                                .then((updated) -> writeChapter(chapterPath, updated))
+                                .flatThen(this::readChapter)
+                                .then(a -> a.findEntryWithId(entry.getId()))
+                                .then(a -> a.map(Chapter.EntryIndex::getEntry)
+                                        .orElseThrow(() -> new RuntimeException("The entry was not found in file after it was saved"))));
+    }
 
-                    final Chapter updated = chapter
-                            .swapEntryAt(index, entry);
+    private static int indexOfEntryInChapter(final Chapter.Entry entry, final Chapter chapter) {
+        final int index = chapter.indexOf(entry);
+        if (index == -1) {
+            throw new EntryNotFoundException();
+        }
 
-                    try {
-                        writer.writeValue(chapterPath.getFile(), updated);
-                    } catch (final IOException e) {
-                        return Result.error(e);
-                    }
+        return index;
+    }
 
-                    return readChapter(chapterPath)
-                            .then(a -> a.findEntryWithId(entry.getId()))
-                            .then(a -> a.map(Chapter.EntryIndex::getEntry)
-                                    .orElseThrow(() -> new RuntimeException("")));
-                });
+    private ChapterPath writeChapter(final ChapterPath chapterPath, final Chapter chapter) throws IOException {
+        requireNonNull(chapterPath);
+        requireNonNull(chapter);
+
+        writer.writeValue(chapterPath.getFile(), chapter);
+        return chapterPath;
     }
 }
