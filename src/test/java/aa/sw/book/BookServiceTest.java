@@ -24,22 +24,14 @@ class BookServiceTest {
     class OpenBookTest {
 
         @Test
-        void openSpecificBook() {
+        void openBook() {
             /* Given */
-            final Path bookPath = Fixtures.resolve("book.json");
+            final BookPath bookPath = BookPath.of(Fixtures.BOOK_DIRECTORY);
 
             /* When */
             final Result<Book> book = service.openBook(bookPath);
 
             /* Then */
-            assertThat(book)
-                    .isEqualTo(Result.value(Fixtures.BOOK));
-        }
-
-        @Test
-        void openBookFoundInFolder() {
-            final Result<Book> book = service.openBook(Fixtures.BOOK_DIRECTORY);
-
             assertThat(book)
                     .isEqualTo(Result.value(Fixtures.BOOK));
         }

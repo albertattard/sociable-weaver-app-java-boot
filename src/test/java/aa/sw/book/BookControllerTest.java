@@ -48,14 +48,14 @@ class BookControllerTest {
         @Test
         void returnBookWhenFolderExistsAndValid() throws Exception {
             /* Given */
-            final Path bookPath = Path.of("path-to-book");
+            final BookPath bookPath = BookPath.of(Path.of("path-to-book"));
             final Map<String, Object> params = Map.of("bookPath", bookPath);
             final Book book = Book.builder()
                     .title("Test Book")
                     .description("Test Description")
                     .chapter("Chapter 1", "Test chapter 1", "chapter-1")
                     .chapter("Chapter 2", "Test chapter 2", "chapter-2")
-                    .bookPath(bookPath)
+                    .bookPath(bookPath.getPath())
                     .build();
             when(service.openBook(bookPath)).thenReturn(Result.value(book));
 
@@ -78,7 +78,7 @@ class BookControllerTest {
         @Test
         void returnClientErrorWhenFolderDoesNotExists() throws Exception {
             /* Given */
-            final Path bookPath = Path.of("path-to-book");
+            final BookPath bookPath = BookPath.of(Path.of("path-to-book"));
             final Map<String, Object> params = Map.of("bookPath", bookPath);
             when(service.openBook(bookPath)).thenReturn(Result.error(new FileNotFoundException()));
 
@@ -93,7 +93,7 @@ class BookControllerTest {
         @Test
         void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
             /* Given */
-            final Path bookPath = Path.of("path-to-book");
+            final BookPath bookPath = BookPath.of(Path.of("path-to-book"));
             final Map<String, Object> params = Map.of("bookPath", bookPath);
             when(service.openBook(bookPath)).thenReturn(Result.error(new Exception("Simulating an error")));
 

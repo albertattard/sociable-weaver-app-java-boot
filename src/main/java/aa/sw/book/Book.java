@@ -80,6 +80,7 @@ public class Book {
     @Value
     @Builder
     @JsonDeserialize(builder = Chapter.ChapterBuilder.class)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Chapter {
         String title;
         String description;

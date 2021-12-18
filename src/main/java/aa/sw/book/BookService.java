@@ -25,16 +25,11 @@ public class BookService {
         this.writer = CustomPrettyPrinter.of(mapper);
     }
 
-    public Result<Book> openBook(final Path bookPath) {
+    public Result<Book> openBook(final BookPath bookPath) {
         requireNonNull(bookPath);
 
-        return Result.of(() -> {
-            final Path file = Files.isDirectory(bookPath)
-                    ? bookPath.resolve("book.json")
-                    : bookPath;
-            return reader.readValue(file.toFile(), Book.class)
-                    .withBookPath(file);
-        });
+        return Result.of(() -> reader.readValue(bookPath.getPath().toFile(), Book.class)
+                .withBookPath(bookPath.getPath()));
     }
 
     public Result<Chapter> readChapter(final Path bookPath, final Path chapterPath) {

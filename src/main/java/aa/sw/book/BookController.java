@@ -24,7 +24,7 @@ public class BookController {
 
     @GetMapping("/book")
     public ResponseEntity<?> openBook(@RequestParam("bookPath") final Path bookPath) {
-        return service.openBook(bookPath)
+        return service.openBook(BookPath.of(bookPath))
                 .map(ResponseEntity::ok, BookController::createOpenErrorResponse);
     }
 
