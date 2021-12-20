@@ -282,7 +282,7 @@ class BookControllerTest {
         }
 
         private CreateEntry createEntry() {
-            return CreateEntry.builder().type("markdown").afterEntry(UUID.randomUUID()).build();
+            return CreateEntry.builder().type("markdown").afterEntryWithId(UUID.randomUUID()).build();
         }
 
         private ResultActions makeCreateEntryRequest(final Map<String, Object> parameters, CreateEntry entry) throws Exception {

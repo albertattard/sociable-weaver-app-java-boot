@@ -27,10 +27,8 @@ public class Chapter {
 
     List<Entry> entries;
 
-    public int indexOf(final Entry entry) {
-        requireNonNull(entry);
-
-        return findEntryWithId(entry.getId())
+    public int indexOf(final UUID id) {
+        return findEntryWithId(id)
                 .map(EntryIndex::getIndex)
                 .orElse(-1);
     }
@@ -52,7 +50,7 @@ public class Chapter {
     }
 
     public Chapter swapEntryAt(final int index, final Entry entry) {
-        requireInRange(index);
+        requireInIndexRange(index);
         requireNonNull(entry);
 
         final Entry existing = entries.get(index);
@@ -65,12 +63,37 @@ public class Chapter {
         return Chapter.ChapterBuilder.build(updated);
     }
 
-    private int requireInRange(final int index) {
+    public Chapter insertEntryAt(final int index, final Entry entry) {
+        requireInInsertRange(index);
+        requireNonNull(entry);
+        requireNonNull(entry.getId());
+
+        return findEntryWithId(entry.getId())
+                .map(this::duplicateEntryIdException)
+                .orElseGet(() -> _insertEntryAt(index, entry));
+    }
+
+    private Chapter _insertEntryAt(final int index, final Entry entry) {
+        final List<Entry> updated = new ArrayList<>(entries.size() + 1);
+        updated.addAll(entries);
+        updated.add(index, entry);
+        return ChapterBuilder.build(updated);
+    }
+
+    private Chapter duplicateEntryIdException(final EntryIndex duplicate) {
+        throw new DuplicateEntryIdException(duplicate.getEntry().getId());
+    }
+
+    private void requireInIndexRange(final int index) {
         if (index < 0 || index >= entries.size()) {
             throw new IllegalArgumentException(String.format("The index %d is out of range ([%d,%d))", index, 0, entries.size()));
         }
+    }
 
-        return index;
+    private void requireInInsertRange(final int index) {
+        if (index < 0 || index > entries.size()) {
+            throw new IllegalArgumentException(String.format("The index %d is out of range ([%d,%d])", index, 0, entries.size()));
+        }
     }
 
     @JsonPOJOBuilder(withPrefix = "")
@@ -126,7 +149,8 @@ public class Chapter {
         Duration commandTimeout;
 
         @JsonPOJOBuilder(withPrefix = "")
-        public static class EntryBuilder { }
+        public static class EntryBuilder {
+        }
     }
 
     @Value

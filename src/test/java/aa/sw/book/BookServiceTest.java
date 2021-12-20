@@ -50,9 +50,67 @@ class BookServiceTest {
     }
 
     @Nested
+    class CreateEntryTest {
+
+        private static final Path BOOK_DIRECTORY = Path.of("build/fixtures/books");
+
+        private static final ChapterPath CHAPTER_PATH = ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE);
+
+        @BeforeEach
+        void setUp() {
+            emptyDirectory(BOOK_DIRECTORY);
+            copyDirectory(Fixtures.BOOK_DIRECTORY, BOOK_DIRECTORY);
+        }
+
+        @Test
+        void returnsErrorWhenEntryNotFoundInChapter() {
+            /* Given */
+            final CreateEntry entry = CreateEntry.builder()
+                    .type("markdown")
+                    .afterEntryWithId(UUID.randomUUID())
+                    .build();
+
+            /* When */
+            final Result<Chapter.Entry> result = service.createEntry(CHAPTER_PATH, entry);
+
+            /* Then */
+            assertThat(result)
+                    .isEqualTo(Result.error(new EntryNotFoundException()));
+        }
+
+
+        @Test
+        void createAndReturnTheWrittenEntry() throws Exception {
+            /* Given */
+            final CreateEntry entry = CreateEntry.builder()
+                    .type("markdown")
+                    .afterEntryWithId(Fixtures.PROLOGUE_ENTRY_2.getId())
+                    .build();
+
+            /* When */
+            final Result<Chapter.Entry> result = service.createEntry(CHAPTER_PATH, entry);
+            System.out.println(result);
+
+            /* Then */
+            assertThat(result.isValuePresent()).isTrue();
+            assertThat(result.value().getType()).isEqualTo("markdown");
+
+            final Chapter chapter = mapper.readValue(prologueFile(BOOK_DIRECTORY), Chapter.class);
+            assertThat(chapter)
+                    .isEqualTo(Chapter.builder()
+                            .entry(Fixtures.PROLOGUE_ENTRY_1)
+                            .entry(Fixtures.PROLOGUE_ENTRY_2)
+                            .entry(result.value())
+                            .build());
+        }
+    }
+
+    @Nested
     class SaveEntryTest {
 
         private static final Path BOOK_DIRECTORY = Path.of("build/fixtures/books");
+
+        private static final ChapterPath CHAPTER_PATH = ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE);
 
         @BeforeEach
         void setUp() {
@@ -68,7 +126,7 @@ class BookServiceTest {
                     .build();
 
             /* When */
-            final Result<Chapter.Entry> result = service.saveEntry(ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE), entry);
+            final Result<Chapter.Entry> result = service.saveEntry(CHAPTER_PATH, entry);
 
             /* Then */
             assertThat(result)
@@ -83,7 +141,7 @@ class BookServiceTest {
                     .build();
 
             /* When */
-            final Result<Chapter.Entry> result = service.saveEntry(ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE), updatedEntry);
+            final Result<Chapter.Entry> result = service.saveEntry(CHAPTER_PATH, updatedEntry);
 
             /* Then */
             assertThat(result)
@@ -97,5 +155,4 @@ class BookServiceTest {
                             .build());
         }
     }
-
 }

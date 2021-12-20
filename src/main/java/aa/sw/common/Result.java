@@ -34,11 +34,23 @@ public class Result<T> {
         return new Result<>(value, null);
     }
 
+    public boolean isValuePresent() {
+        return error == null;
+    }
+
+    public T value() {
+        return map(Function.identity(), Result::valueNotSet);
+    }
+
+    private static <E> E valueNotSet(final Throwable e) {
+        throw new IllegalStateException("Value is not set", e);
+    }
+
     public <V> V map(final Function<T, V> valueMapper, final Function<Exception, V> errorMapper) {
         requireNonNull(valueMapper);
         requireNonNull(errorMapper);
 
-        return error == null
+        return isValuePresent()
                 ? valueMapper.apply(value)
                 : errorMapper.apply(error);
     }
@@ -46,7 +58,7 @@ public class Result<T> {
     public <V> Result<V> then(final ResultFunction<T, V> mapper) {
         requireNonNull(mapper);
 
-        return error == null
+        return isValuePresent()
                 ? Result.of(() -> mapper.apply(value))
                 : Result.error(error);
     }
@@ -54,7 +66,7 @@ public class Result<T> {
     public <V> Result<V> flatThen(final Function<T, Result<V>> mapper) {
         requireNonNull(mapper);
 
-        return error == null
+        return isValuePresent()
                 ? mapper.apply(value)
                 : Result.error(error);
     }
@@ -77,7 +89,7 @@ public class Result<T> {
 
     @Override
     public String toString() {
-        return error == null
+        return isValuePresent()
                 ? String.valueOf(value)
                 : String.valueOf(error);
     }

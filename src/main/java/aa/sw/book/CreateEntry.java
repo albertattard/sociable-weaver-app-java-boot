@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Value
@@ -17,11 +16,7 @@ import java.util.UUID;
 public class CreateEntry {
 
     String type;
-    UUID afterEntry;
-
-    public Optional<UUID> getAfterEntry(){
-        return Optional.ofNullable(afterEntry);
-    } 
+    UUID afterEntryWithId;
 
     @JsonPOJOBuilder(withPrefix = "")
     public static class CreateEntryBuilder {}

@@ -27,4 +27,58 @@ class ChapterTest {
                     .isEmpty();
         }
     }
+
+    @Nested
+    class InsertEntryAtTest {
+
+        @Test
+        void insertEntryInAnEmptyChapter() {
+            /* Given */
+            final Chapter chapter = Chapter.builder().build();
+            final Chapter.Entry entry = Chapter.Entry.builder().id(UUID.randomUUID()).build();
+
+            /* When */
+            final Chapter result = chapter.insertEntryAt(0, entry);
+
+            /* Then */
+            assertThat(result)
+                    .isEqualTo(Chapter.builder().entry(entry).build());
+        }
+
+        @Test
+        void insertsEntryAtGivenIndex() {
+            /* Given */
+            final Chapter chapter = Fixtures.PROLOGUE;
+            final Chapter.Entry entry = Chapter.Entry.builder().id(UUID.randomUUID()).build();
+
+            /* When */
+            final Chapter result = chapter.insertEntryAt(1, entry);
+
+            /* Then */
+            assertThat(result)
+                    .isEqualTo(Chapter.builder()
+                            .entry(Fixtures.PROLOGUE_ENTRY_1)
+                            .entry(entry)
+                            .entry(Fixtures.PROLOGUE_ENTRY_2)
+                            .build());
+        }
+
+        @Test
+        void insertsEntryAtTheEnd() {
+            /* Given */
+            final Chapter chapter = Fixtures.PROLOGUE;
+            final Chapter.Entry entry = Chapter.Entry.builder().id(UUID.randomUUID()).build();
+
+            /* When */
+            final Chapter result = chapter.insertEntryAt(2, entry);
+
+            /* Then */
+            assertThat(result)
+                    .isEqualTo(Chapter.builder()
+                            .entry(Fixtures.PROLOGUE_ENTRY_1)
+                            .entry(Fixtures.PROLOGUE_ENTRY_2)
+                            .entry(entry)
+                            .build());
+        }
+    }
 }
