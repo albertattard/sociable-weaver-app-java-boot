@@ -3,6 +3,7 @@ package aa.sw.book;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +34,14 @@ public class BookController {
                                          @RequestParam("chapterPath") final Path chapterPath) {
         return service.readChapter(ChapterPath.of(bookPath, chapterPath))
                 .map(ResponseEntity::ok, BookController::createReadChapterErrorResponse);
+    }
+
+    @PostMapping("/entry")
+    public ResponseEntity<?> createEntry(@RequestParam("bookPath") final Path bookPath,
+                                         @RequestParam("chapterPath") final Path chapterPath,
+                                         @RequestBody final CreateEntry entry) {
+        return service.createEntry(ChapterPath.of(bookPath, chapterPath), entry)
+                .map(ResponseEntity::ok, BookController::createSaveEntryErrorResponse);
     }
 
     @PutMapping("/entry")

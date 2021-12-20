@@ -50,6 +50,13 @@ public class BookService {
                         .orElseThrow(() -> new RuntimeException("The entry was not found in file after it was saved")));
     }
 
+    public Result<Chapter.Entry> createEntry(final ChapterPath chapterPath, final CreateEntry entry) {
+        requireNonNull(chapterPath);
+        requireNonNull(entry);
+
+        return Result.error(new UnsupportedOperationException("Not yet implemented"));
+    }
+
     private static ChapterEntryIndex indexOfEntryInChapter(final Chapter.Entry entry, final Chapter chapter) {
         requireNonNull(entry);
         requireNonNull(chapter);
@@ -70,5 +77,6 @@ public class BookService {
         return chapterPath;
     }
 
-    private record ChapterEntryIndex(Chapter chapter, int index) { }
+    private record ChapterEntryIndex(Chapter chapter, int index) {
+    }
 }
