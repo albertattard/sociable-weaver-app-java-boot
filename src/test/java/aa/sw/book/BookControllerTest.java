@@ -228,12 +228,48 @@ class BookControllerTest {
     class CreateEntryTest {
 
         @Test
+        void saveAndReturnEntry() throws Exception {
+            /* Given */
+            final Path bookPath = Path.of("path-to-book");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
+            final CreateEntry entry = createEntry();
+            when(service.createEntry(ChapterPath.of(bookPath, chapterPath), entry))
+                    .thenReturn(Result.value(BookControllerTest.createEntry()));
+
+            /* When */
+            final ResultActions result = makeCreateEntryRequest(params, entry);
+
+            /* Then */
+            result.andExpect(status().isOk())
+                    .andExpect(jsonPath("type", is("markdown")));
+        }
+
+        @Test
+        void returnClientErrorWhenEntryDoesNotExists() throws Exception {
+            /* Given */
+            final Path bookPath = Path.of("path-to-book");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
+            final CreateEntry entry = createEntry();
+            when(service.createEntry(ChapterPath.of(bookPath, chapterPath), entry))
+                    .thenReturn(Result.error(new EntryNotFoundException()));
+
+            /* When */
+            final ResultActions result = makeCreateEntryRequest(params, entry);
+
+            /* Then */
+            result.andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("message", is("Entry not found in chapter")));
+        }
+
+        @Test
         void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
             /* Given */
             final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            final CreateEntry entry = CreateEntry.builder().type("markdown").afterEntry(UUID.randomUUID()).build();
+            final CreateEntry entry = createEntry();
             when(service.createEntry(ChapterPath.of(bookPath, chapterPath), entry))
                     .thenReturn(Result.error(new Exception("Simulating an error")));
 
@@ -245,12 +281,16 @@ class BookControllerTest {
                     .andExpect(jsonPath("message", is("Encountered an unexpected error")));
         }
 
+        private CreateEntry createEntry() {
+            return CreateEntry.builder().type("markdown").afterEntry(UUID.randomUUID()).build();
+        }
+
         private ResultActions makeCreateEntryRequest(final Map<String, Object> parameters, CreateEntry entry) throws Exception {
             return mockMvc.perform(post("/api/entry", parameters, entry));
         }
     }
 
     private static Chapter.Entry createEntry() {
-        return Chapter.Entry.builder().id(UUID.randomUUID()).type("todo").build();
+        return Chapter.Entry.builder().id(UUID.randomUUID()).type("markdown").build();
     }
 }
