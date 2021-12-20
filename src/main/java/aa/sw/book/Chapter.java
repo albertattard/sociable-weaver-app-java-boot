@@ -1,5 +1,6 @@
 package aa.sw.book;
 
+import aa.sw.common.Pair;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.util.Objects.requireNonNull;
@@ -63,6 +65,16 @@ public class Chapter {
         return Chapter.ChapterBuilder.build(updated);
     }
 
+    public Pair<Chapter, Entry> createEntryAt(final int index, final String type) {
+        requireInInsertRange(index);
+        requireNonNull(type);
+
+        return randomUnusedEntryId()
+                .map(id -> Entry.builder().id(id).type(type).build())
+                .map(entry -> Pair.of(insertEntryAt(index, entry), entry))
+                .orElseThrow(() -> new RuntimeException("Failed to find an unused entry id"));
+    }
+
     public Chapter insertEntryAt(final int index, final Entry entry) {
         requireInInsertRange(index);
         requireNonNull(entry);
@@ -78,6 +90,23 @@ public class Chapter {
         updated.addAll(entries);
         updated.add(index, entry);
         return ChapterBuilder.build(updated);
+    }
+
+    public <T> T map(final Function<Chapter, T> mapper){
+        requireNonNull(mapper);
+
+        return mapper.apply(this);
+    }
+
+    private Optional<UUID> randomUnusedEntryId() {
+        for (int attempts = 0; attempts < 100; attempts++) {
+            final UUID uuid = UUID.randomUUID();
+            if (indexOf(uuid) == -1) {
+                return Optional.of(uuid);
+            }
+        }
+
+        return Optional.empty();
     }
 
     private Chapter duplicateEntryIdException(final EntryIndex duplicate) {
@@ -148,9 +177,14 @@ public class Chapter {
         Integer expectedExitValue;
         Duration commandTimeout;
 
-        @JsonPOJOBuilder(withPrefix = "")
-        public static class EntryBuilder {
+        public <T> T map(final Function<Entry, T> mapper) {
+            requireNonNull(mapper);
+
+            return mapper.apply(this);
         }
+
+        @JsonPOJOBuilder(withPrefix = "")
+        public static class EntryBuilder {}
     }
 
     @Value

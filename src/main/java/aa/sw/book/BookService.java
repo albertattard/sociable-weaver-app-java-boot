@@ -1,6 +1,7 @@
 package aa.sw.book;
 
 import aa.sw.common.CustomPrettyPrinter;
+import aa.sw.common.Pair;
 import aa.sw.common.Result;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -43,7 +44,7 @@ public class BookService {
 
         return readChapter(chapterPath)
                 .then(chapter -> indexOfEntryInChapter(entry.getId(), chapter))
-                .then(pair -> pair.chapter.swapEntryAt(pair.index, entry))
+                .then(pair -> pair.left().swapEntryAt(pair.right(), entry))
                 .then(updated -> writeChapter(chapterPath, updated))
                 .flatThen(this::readChapter)
                 .then(chapter -> chapter.findEntryWithId(entry.getId()))
@@ -65,7 +66,7 @@ public class BookService {
                             .id(id)
                             .type(createEntry.getType())
                             .build();
-                    final Chapter chapter = pair.chapter.insertEntryAt(pair.index+1, entry);
+                    final Chapter chapter = pair.left().insertEntryAt(pair.right()+1, entry);
                     return new ChapterEntry(chapter, entry);
                 })
                 .then(pair -> writeChapter(chapterPath, pair.chapter))
@@ -75,7 +76,7 @@ public class BookService {
                         .orElseThrow(() -> new RuntimeException("The entry was not found in file after it was created")));
     }
 
-    private static ChapterEntryIndex indexOfEntryInChapter(final UUID id, final Chapter chapter) {
+    private static Pair<Chapter, Integer> indexOfEntryInChapter(final UUID id, final Chapter chapter) {
         requireNonNull(id);
         requireNonNull(chapter);
 
@@ -84,7 +85,7 @@ public class BookService {
             throw new EntryNotFoundException();
         }
 
-        return new ChapterEntryIndex(chapter, index);
+        return Pair.of(chapter, index);
     }
 
     private ChapterPath writeChapter(final ChapterPath chapterPath, final Chapter chapter) throws IOException {
@@ -96,8 +97,5 @@ public class BookService {
     }
 
     private record ChapterEntry(Chapter chapter, Chapter.Entry entry) {
-    }
-
-    private record ChapterEntryIndex(Chapter chapter, int index) {
     }
 }
