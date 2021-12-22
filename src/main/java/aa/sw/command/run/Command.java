@@ -7,7 +7,6 @@ import lombok.Value;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,7 +29,6 @@ public class Command {
 
     Path workspace;
     Optional<String> workingDirectory;
-    List<String> parameters;
     String commands;
     Map<String, String> environmentVariables;
 
@@ -38,7 +36,6 @@ public class Command {
         requireNonNull(parameters);
 
         return builder()
-                .parameters(parameters)
                 .commands(String.join("\n", parameters))
                 .build();
     }
@@ -87,7 +84,6 @@ public class Command {
         }
 
         return toBuilder()
-                .parameters(withInterpolatedValues(parameters, values))
                 .commands(withInterpolatedValues(commands, values))
                 .environmentVariables(withInterpolatedValues(environmentVariables, values))
                 .build();
@@ -109,30 +105,6 @@ public class Command {
         }
 
         return input;
-    }
-
-    private static List<String> withInterpolatedValues(final List<String> input, final Map<String, String> values) {
-        requireNonNull(input);
-        requireNonNull(values);
-
-        final Pattern variablePattern = Pattern.compile("\\$\\{(.+)}");
-
-        final List<String> interpolated = new ArrayList<>(input.size());
-        for (int i = 0, size = input.size(); i < size; i++) {
-            final String text = input.get(i);
-            interpolated.add(text);
-
-            final Matcher matcher = variablePattern.matcher(text);
-            if (matcher.find()) {
-                final String variable = matcher.group(1);
-                final String value = values.get(variable);
-                if (value != null) {
-                    interpolated.set(i, text.replace("${" + variable + "}", value));
-                }
-            }
-        }
-
-        return List.copyOf(interpolated);
     }
 
     private static Map<String, String> withInterpolatedValues(final Map<String, String> input, final Map<String,
@@ -180,7 +152,7 @@ public class Command {
     }
 
     private String formattedCommand() {
-        return String.join("\n", parameters);
+        return commands;
     }
 
     public String toString() {
@@ -216,7 +188,6 @@ public class Command {
             return new Command(
                     defaultWorkspaceIfNull(workspace),
                     emptyIfNull(workingDirectory),
-                    unmodifiable(parameters),
                     requireNonNull(commands),
                     unmodifiable(environmentVariables));
         }
@@ -233,12 +204,6 @@ public class Command {
         private static <V> Optional<V> emptyIfNull(final Optional<V> source) {
             return Optional.ofNullable(source)
                     .orElse(Optional.empty());
-        }
-
-        private static <V> List<V> unmodifiable(final List<V> source) {
-            return Optional.ofNullable(source)
-                    .map(List::copyOf)
-                    .orElse(Collections.emptyList());
         }
 
         private static <K, V> Map<K, V> unmodifiable(final Map<K, V> source) {

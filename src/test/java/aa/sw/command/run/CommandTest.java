@@ -28,7 +28,7 @@ class CommandTest {
             /* Then */
             final String commands = "java -jar hello-world.jar";
             assertThat(command)
-                    .isEqualTo(create(parameters, commands));
+                    .isEqualTo(create(commands));
         }
 
         @Test
@@ -42,7 +42,7 @@ class CommandTest {
             /* Then */
             final String commands = "echo 'hello world'";
             assertThat(command)
-                    .isEqualTo(create(parameters, commands));
+                    .isEqualTo(create(commands));
         }
 
         @Test
@@ -57,7 +57,7 @@ class CommandTest {
             /* Then */
             final String commands = "curl 'https://github.com/albertattard/' -H 'Accept: application/json'";
             assertThat(command)
-                    .isEqualTo(create(parameters, commands));
+                    .isEqualTo(create(commands));
         }
 
         @Test
@@ -71,7 +71,7 @@ class CommandTest {
             /* Then */
             final String commands = "echo \"hello world\"";
             assertThat(command)
-                    .isEqualTo(create(parameters, commands));
+                    .isEqualTo(create(commands));
         }
 
         @Test
@@ -86,7 +86,7 @@ class CommandTest {
             /* Then */
             final String commands = "curl \"https://github.com/albertattard/\" -H \"Accept: application/json\"";
             assertThat(command)
-                    .isEqualTo(create(parameters, commands));
+                    .isEqualTo(create(commands));
         }
 
         @Test
@@ -100,7 +100,7 @@ class CommandTest {
             /* Then */
             final String commands = "echo '\"hello world\"'";
             assertThat(command)
-                    .isEqualTo(create(parameters, commands));
+                    .isEqualTo(create(commands));
         }
 
         @Test
@@ -144,7 +144,7 @@ class CommandTest {
             /* Then */
             final String commands = "echo 'hello world'";
             assertThat(command)
-                    .isEqualTo(create(List.of("echo 'hello world'"), commands));
+                    .isEqualTo(create(commands));
         }
 
 
@@ -261,9 +261,8 @@ class CommandTest {
         }
     }
 
-    private static Command create(final List<String> parameters, final String commands) {
+    private static Command create(final String commands) {
         return Command.builder()
-                .parameters(parameters)
                 .commands(commands)
                 .build();
     }

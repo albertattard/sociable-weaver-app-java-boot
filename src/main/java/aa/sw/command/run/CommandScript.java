@@ -37,10 +37,10 @@ public class CommandScript {
     private static String createScript(final String commands) {
         return """
                 ##!/bin/bash
-                                
-                {COMMANDS}
+                
                 """
-                .replaceAll("\\{COMMANDS}", commands);
+                .concat(commands)
+                .concat("\n");
     }
 
     private static String createFileName(final String script) {
