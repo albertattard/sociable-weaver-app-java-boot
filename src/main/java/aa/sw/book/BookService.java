@@ -45,8 +45,8 @@ public class BookService {
         return readChapter(chapterPath)
                 .then(chapter -> indexOfEntryInChapter(entry.getId(), chapter))
                 .then(pair -> pair.left().swapEntryAt(pair.right(), entry))
-                .then(updated -> writeChapter(chapterPath, updated))
-                .flatThen(this::readChapter)
+                .then(updated -> writeChapter(Pair.of(chapterPath, updated)))
+                .flatThen(pair -> readChapter(pair.left()))
                 .then(chapter -> chapter.findEntryWithId(entry.getId()))
                 .then(entryIndex -> entryIndex.map(Chapter.EntryIndex::getEntry)
                         .orElseThrow(() -> new RuntimeException("The entry was not found in file after it was saved")));
@@ -66,11 +66,11 @@ public class BookService {
                             .id(id)
                             .type(createEntry.getType())
                             .build();
-                    final Chapter chapter = pair.left().insertEntryAt(pair.right()+1, entry);
-                    return new ChapterEntry(chapter, entry);
+                    final Chapter chapter = pair.left().insertEntryAt(pair.right() + 1, entry);
+                    return Pair.of(chapter, entry);
                 })
-                .then(pair -> writeChapter(chapterPath, pair.chapter))
-                .flatThen(this::readChapter)
+                .then(pair -> writeChapter(Pair.of(chapterPath, pair.left())))
+                .flatThen(pair -> readChapter(pair.left()))
                 .then(chapter -> chapter.findEntryWithId(id))
                 .then(entryIndex -> entryIndex.map(Chapter.EntryIndex::getEntry)
                         .orElseThrow(() -> new RuntimeException("The entry was not found in file after it was created")));
@@ -88,14 +88,9 @@ public class BookService {
         return Pair.of(chapter, index);
     }
 
-    private ChapterPath writeChapter(final ChapterPath chapterPath, final Chapter chapter) throws IOException {
-        requireNonNull(chapterPath);
-        requireNonNull(chapter);
+    private Pair<ChapterPath, Chapter> writeChapter(final Pair<ChapterPath, Chapter> chapterAndPath) throws IOException {
+        requireNonNull(chapterAndPath);
 
-        writer.writeValue(chapterPath.getFile(), chapter);
-        return chapterPath;
-    }
-
-    private record ChapterEntry(Chapter chapter, Chapter.Entry entry) {
+        return chapterAndPath.with((path, chapter) -> writer.writeValue(path.getFile(), chapter));
     }
 }
