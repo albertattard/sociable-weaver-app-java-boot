@@ -3,12 +3,11 @@ package aa.sw;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 
+import static aa.sw.common.UncheckedIo.uncheckedIo;
 import static java.util.Objects.requireNonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -53,33 +52,5 @@ public class IoUtils {
         requireNonNull(file);
 
         uncheckedIo(() -> Files.delete(file));
-    }
-
-    public static void uncheckedIo(final IoRunnable runnable) {
-        requireNonNull(runnable);
-
-        try {
-            runnable.run();
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    public static <T> T uncheckedIo(final IoSupplier<T> supplier) {
-        requireNonNull(supplier);
-
-        try {
-            return supplier.get();
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    public interface IoSupplier<T> {
-        T get() throws IOException;
-    }
-
-    public interface IoRunnable {
-        void run() throws IOException;
     }
 }

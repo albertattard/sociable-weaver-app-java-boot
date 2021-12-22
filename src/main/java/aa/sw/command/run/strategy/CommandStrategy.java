@@ -4,6 +4,7 @@ import aa.sw.command.CommandResult;
 import aa.sw.command.RunnableEntry;
 import aa.sw.command.run.Command;
 import aa.sw.command.run.CommandRunnerContext;
+import aa.sw.command.run.CommandScript;
 import aa.sw.command.run.ProcessResult;
 import aa.sw.command.run.ProcessRunner;
 import aa.sw.command.run.RunnableEntryExecutionStrategy;
@@ -57,15 +58,18 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
     public CommandResult execute(final CommandRunnerContext context) {
         context.appendLine(command.asFormattedString());
 
-        return ProcessRunner.builder()
-                .context(context)
-                .command(command.getCommandAndArgs())
-                .executionDirectory(command.getExecutionDirectory())
-                .environmentVariables(command.getEnvironmentVariables())
-                .commandTimeout(commandTimeout)
-                .build()
-                .run()
-                .map(this::determineResult);
+        return CommandScript.of(command.getCommands())
+                .createScriptIn(command.getExecutionDirectory())
+                .with(script -> ProcessRunner.builder()
+                        .context(context)
+                        .command(script.toProcessParameters())
+                        .executionDirectory(command.getExecutionDirectory())
+                        .environmentVariables(command.getEnvironmentVariables())
+                        .commandTimeout(commandTimeout)
+                        .build()
+                        .run()
+                        .map(this::determineResult)
+                );
     }
 
     private CommandResult determineResult(final ProcessResult result) {

@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import static aa.sw.IoUtils.uncheckedIo;
+import static aa.sw.common.UncheckedIo.uncheckedIo;
 import static java.util.Objects.requireNonNull;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

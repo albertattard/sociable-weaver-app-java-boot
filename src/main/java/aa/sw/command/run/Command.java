@@ -8,7 +8,6 @@ import lombok.Value;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,58 +31,15 @@ public class Command {
     Path workspace;
     Optional<String> workingDirectory;
     List<String> parameters;
-    List<String> commandAndArgs;
+    String commands;
     Map<String, String> environmentVariables;
 
     public static Command parse(final List<String> parameters) {
         requireNonNull(parameters);
 
-        final List<String> commandAndArgs = new ArrayList<>();
-        final StringBuilder buffer = new StringBuilder();
-        boolean withinGroup = false;
-        Group group = null;
-
-        for (final String line : parameters) {
-            for (final char c : line.toCharArray()) {
-                switch (c) {
-                    case '\'', '"':
-                        if (group == null) {
-                            group = Group.of(c);
-                            withinGroup = true;
-                        } else if (group.matches(c)) {
-                            withinGroup = false;
-                            group = null;
-                        } else {
-                            buffer.append(c);
-                        }
-                        break;
-                    case '\\':
-                        if (withinGroup) {
-                            buffer.append(c);
-                        }
-                        break;
-                    case ' ':
-                        if (withinGroup) {
-                            buffer.append(c);
-                        } else if (buffer.length() > 0) {
-                            commandAndArgs.add(buffer.toString());
-                            buffer.setLength(0);
-                        }
-                        break;
-                    default:
-                        buffer.append(c);
-                }
-            }
-        }
-
-        /* Add the last argument */
-        if (!buffer.isEmpty()) {
-            commandAndArgs.add(buffer.toString());
-        }
-
         return builder()
                 .parameters(parameters)
-                .commandAndArgs(commandAndArgs)
+                .commands(String.join("\n", parameters))
                 .build();
     }
 
@@ -132,9 +88,27 @@ public class Command {
 
         return toBuilder()
                 .parameters(withInterpolatedValues(parameters, values))
-                .commandAndArgs(withInterpolatedValues(commandAndArgs, values))
+                .commands(withInterpolatedValues(commands, values))
                 .environmentVariables(withInterpolatedValues(environmentVariables, values))
                 .build();
+    }
+
+    private static String withInterpolatedValues(final String input, final Map<String, String> values) {
+        requireNonNull(input);
+        requireNonNull(values);
+
+        final Pattern variablePattern = Pattern.compile("\\$\\{(.+)}");
+
+        final Matcher matcher = variablePattern.matcher(input);
+        if (matcher.find()) {
+            final String variable = matcher.group(1);
+            final String value = values.get(variable);
+            if (value != null) {
+                return input.replace("${" + variable + "}", value);
+            }
+        }
+
+        return input;
     }
 
     private static List<String> withInterpolatedValues(final List<String> input, final Map<String, String> values) {
@@ -243,7 +217,7 @@ public class Command {
                     defaultWorkspaceIfNull(workspace),
                     emptyIfNull(workingDirectory),
                     unmodifiable(parameters),
-                    unmodifiable(commandAndArgs),
+                    requireNonNull(commands),
                     unmodifiable(environmentVariables));
         }
 
@@ -272,26 +246,6 @@ public class Command {
                     /* Do not use Map.copyOf() as we need to preserve the order */
                     .map(Collections::unmodifiableMap)
                     .orElse(Collections.emptyMap());
-        }
-    }
-
-    private enum Group {
-        SINGLE('\''),
-        DOUBLE('"');
-
-        private final char c;
-
-        Group(char c) { this.c = c; }
-
-        public static Group of(char c) {
-            return Arrays.stream(values())
-                    .filter(g -> g.c == c)
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Group termination symbol not found"));
-        }
-
-        private boolean matches(final char c) {
-            return this.c == c;
         }
     }
 }

@@ -26,9 +26,9 @@ class CommandTest {
             final Command command = Command.parse(parameters);
 
             /* Then */
-            final List<String> commandAndArgs = List.of("java", "-jar", "hello-world.jar");
+            final String commands = "java -jar hello-world.jar";
             assertThat(command)
-                    .isEqualTo(create(parameters, commandAndArgs));
+                    .isEqualTo(create(parameters, commands));
         }
 
         @Test
@@ -40,9 +40,9 @@ class CommandTest {
             final Command command = Command.parse(parameters);
 
             /* Then */
-            final List<String> commandAndArgs = List.of("echo", "hello world");
+            final String commands = "echo 'hello world'";
             assertThat(command)
-                    .isEqualTo(create(parameters, commandAndArgs));
+                    .isEqualTo(create(parameters, commands));
         }
 
         @Test
@@ -55,11 +55,9 @@ class CommandTest {
             final Command command = Command.parse(parameters);
 
             /* Then */
-            final List<String> commandAndArgs =
-                    List.of("curl", "https://github.com/albertattard/", "-H", "Accept: application/json");
-            System.out.println(command.getCommandAndArgs());
+            final String commands = "curl 'https://github.com/albertattard/' -H 'Accept: application/json'";
             assertThat(command)
-                    .isEqualTo(create(parameters, commandAndArgs));
+                    .isEqualTo(create(parameters, commands));
         }
 
         @Test
@@ -71,9 +69,9 @@ class CommandTest {
             final Command command = Command.parse(parameters);
 
             /* Then */
-            final List<String> commandAndArgs = List.of("echo", "hello world");
+            final String commands = "echo \"hello world\"";
             assertThat(command)
-                    .isEqualTo(create(parameters, commandAndArgs));
+                    .isEqualTo(create(parameters, commands));
         }
 
         @Test
@@ -86,10 +84,9 @@ class CommandTest {
             final Command command = Command.parse(parameters);
 
             /* Then */
-            final List<String> commandAndArgs =
-                    List.of("curl", "https://github.com/albertattard/", "-H", "Accept: application/json");
+            final String commands = "curl \"https://github.com/albertattard/\" -H \"Accept: application/json\"";
             assertThat(command)
-                    .isEqualTo(create(parameters, commandAndArgs));
+                    .isEqualTo(create(parameters, commands));
         }
 
         @Test
@@ -101,9 +98,9 @@ class CommandTest {
             final Command command = Command.parse(parameters);
 
             /* Then */
-            final List<String> commandAndArgs = List.of("echo", "\"hello world\"");
+            final String commands = "echo '\"hello world\"'";
             assertThat(command)
-                    .isEqualTo(create(parameters, commandAndArgs));
+                    .isEqualTo(create(parameters, commands));
         }
 
         @Test
@@ -120,11 +117,13 @@ class CommandTest {
             final Command command = Command.parse(parameters);
 
             /* Then */
-            final List<String> expected = List.of("hub", "create",
-                    "--private",
-                    "--description", "Hello World Application (Java + Git + Gradle + Docker + GitHub Actions)",
-                    "programming--hello-world");
-            assertThat(command.getCommandAndArgs())
+            final String expected = """
+                    hub create \\
+                      --private \\
+                      --description 'Hello World Application (Java + Git + Gradle + Docker + GitHub Actions)' \\
+                      'programming--hello-world'\
+                    """;
+            assertThat(command.getCommands())
                     .isEqualTo(expected);
         }
     }
@@ -143,9 +142,9 @@ class CommandTest {
                     .withInterpolatedValues(values);
 
             /* Then */
-            final List<String> commandAndArgs = List.of("echo", "hello world");
+            final String commands = "echo 'hello world'";
             assertThat(command)
-                    .isEqualTo(create(List.of("echo 'hello world'"), commandAndArgs));
+                    .isEqualTo(create(List.of("echo 'hello world'"), commands));
         }
 
 
@@ -173,6 +172,7 @@ class CommandTest {
         void returnWorkspaceWhenWorkingDirectoryIsNotProvided() {
             /* Given */
             final Command command = Command.builder()
+                    .commands("echo 'Hello world'")
                     .workspace(Path.of("workspace"))
                     .build();
 
@@ -188,6 +188,7 @@ class CommandTest {
         void returnBothWorkspaceAndWorkingDirectory() {
             /* Given */
             final Command command = Command.builder()
+                    .commands("echo 'Hello world'")
                     .workspace(Path.of("workspace"))
                     .workingDirectory(Optional.of("work-dir"))
                     .build();
@@ -260,10 +261,10 @@ class CommandTest {
         }
     }
 
-    private static Command create(final List<String> parameters, final List<String> commandAndArgs) {
+    private static Command create(final List<String> parameters, final String commands) {
         return Command.builder()
                 .parameters(parameters)
-                .commandAndArgs(commandAndArgs)
+                .commands(commands)
                 .build();
     }
 }
