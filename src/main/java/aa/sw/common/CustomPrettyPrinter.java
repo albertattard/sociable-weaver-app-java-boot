@@ -8,9 +8,13 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 
 import java.io.IOException;
 
+import static java.util.Objects.requireNonNull;
+
 public class CustomPrettyPrinter extends DefaultPrettyPrinter {
 
     public static ObjectWriter of(final ObjectMapper mapper) {
+        requireNonNull(mapper);
+
         final CustomPrettyPrinter prettyPrinter = new CustomPrettyPrinter();
         prettyPrinter._spacesInObjectEntries = true;
         prettyPrinter._objectFieldValueSeparatorWithSpaces = ": ";
@@ -27,7 +31,7 @@ public class CustomPrettyPrinter extends DefaultPrettyPrinter {
     }
 
     @Override
-    public void writeEndObject(JsonGenerator g, int nrOfEntries) throws IOException {
+    public void writeEndObject(final JsonGenerator g, final int nrOfEntries) throws IOException {
         if (!_objectIndenter.isInline()) {
             --_nesting;
         }
@@ -37,6 +41,19 @@ public class CustomPrettyPrinter extends DefaultPrettyPrinter {
             g.writeRaw("");
         }
         g.writeRaw('}');
+    }
+
+    @Override
+    public void writeEndArray(final JsonGenerator g, final int nrOfValues) throws IOException {
+        if (!_arrayIndenter.isInline()) {
+            --_nesting;
+        }
+        if (nrOfValues > 0) {
+            _arrayIndenter.writeIndentation(g, _nesting);
+        } else {
+            g.writeRaw("");
+        }
+        g.writeRaw(']');
     }
 
     @Override

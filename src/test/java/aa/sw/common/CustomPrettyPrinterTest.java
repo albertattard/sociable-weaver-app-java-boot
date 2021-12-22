@@ -41,10 +41,23 @@ class CustomPrettyPrinterTest {
     }
 
     @Test
+    void formatSingleObjectWithEmptyArray() {
+        /* Given */
+        final TestObject testObject = new TestObject();
+        testObject.setNames(new String[]{});
+
+        /* When */
+        final String json = asString(testObject);
+
+        /* Then */
+        assertEquals(read("single-object-with-empty-array.json"), json);
+    }
+
+    @Test
     void formatSingleObjectWithArray() {
         /* Given */
         final TestObject testObject = new TestObject();
-        testObject.setNames(new String[]{ "Albert", "Attard" });
+        testObject.setNames(new String[]{"Albert", "Attard"});
 
         /* When */
         final String json = asString(testObject);
