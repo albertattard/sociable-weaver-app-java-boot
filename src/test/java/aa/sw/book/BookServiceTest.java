@@ -110,12 +110,17 @@ class BookServiceTest {
 
         private static final Path BOOK_DIRECTORY = Path.of("build/fixtures/books");
 
-        private static final ChapterPath CHAPTER_PATH = ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE);
+        private ChapterPath chapterPath;
 
         @BeforeEach
         void setUp() {
             emptyDirectory(BOOK_DIRECTORY);
             copyDirectory(Fixtures.BOOK_DIRECTORY, BOOK_DIRECTORY);
+
+            /* Create the path after copying the fixtures as otherwise the path will be wrongly constructed.  If the
+                book path is not a directory, then it will be assumed as the book path.
+                TODO: we may need to reconsider this approach as it can be misleading.  */
+            chapterPath = ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE);
         }
 
         @Test
@@ -126,7 +131,7 @@ class BookServiceTest {
                     .build();
 
             /* When */
-            final Result<Chapter.Entry> result = service.saveEntry(CHAPTER_PATH, entry);
+            final Result<Chapter.Entry> result = service.saveEntry(chapterPath, entry);
 
             /* Then */
             assertThat(result)
@@ -141,7 +146,7 @@ class BookServiceTest {
                     .build();
 
             /* When */
-            final Result<Chapter.Entry> result = service.saveEntry(CHAPTER_PATH, updatedEntry);
+            final Result<Chapter.Entry> result = service.saveEntry(chapterPath, updatedEntry);
 
             /* Then */
             assertThat(result)
