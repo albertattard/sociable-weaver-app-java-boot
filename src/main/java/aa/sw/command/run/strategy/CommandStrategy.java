@@ -11,6 +11,7 @@ import aa.sw.command.run.RunnableEntryExecutionStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -59,10 +60,10 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
         context.appendLine(command.asFormattedString());
 
         return CommandScript.of(command.getCommands())
-                .createScriptIn(command.getExecutionDirectory())
-                .with(script -> ProcessRunner.builder()
+                .createScriptIn(command.getWorkspace().resolve(".scripts"))
+                .with(path -> ProcessRunner.builder()
                         .context(context)
-                        .command(script.toProcessParameters())
+                        .command(List.of(path.toString()))
                         .executionDirectory(command.getExecutionDirectory())
                         .environmentVariables(command.getEnvironmentVariables())
                         .commandTimeout(commandTimeout)

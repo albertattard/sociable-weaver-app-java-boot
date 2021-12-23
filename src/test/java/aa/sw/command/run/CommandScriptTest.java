@@ -2,18 +2,16 @@ package aa.sw.command.run;
 
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 import static aa.sw.common.UncheckedIo.uncheckedIo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CommandScriptTest {
 
-    private static final File DIRECTORY = new File("build/command-script");
+    private static final Path DIRECTORY = Path.of("build", "command-script");
 
     @Test
     void handleSingleLineCommands() {
@@ -62,11 +60,6 @@ class CommandScriptTest {
     private String createAndReadScript(final String command) {
         return CommandScript.of(command)
                 .createScriptIn(DIRECTORY)
-                .with(script -> {
-                    final List<String> list = script.toProcessParameters();
-                    final String fileName = list.get(0);
-                    final Path file = new File(DIRECTORY, fileName).toPath();
-                    return uncheckedIo(() -> Files.readString(file, StandardCharsets.UTF_8));
-                });
+                .with(path -> uncheckedIo(() -> Files.readString(path, StandardCharsets.UTF_8)));
     }
 }

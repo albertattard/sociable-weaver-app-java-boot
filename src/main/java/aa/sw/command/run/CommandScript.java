@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,14 +29,10 @@ public class CommandScript {
         return new CommandScript(script, fileName);
     }
 
-    public List<String> toProcessParameters() {
-        return List.of("./".concat(fileName));
-    }
-
     private static String createScript(final String commands) {
         return """
                 ##!/bin/bash
-                
+                                
                 """
                 .concat(commands)
                 .concat("\n");
@@ -49,15 +44,14 @@ public class CommandScript {
                 .toString();
     }
 
-    public WithScriptCreated createScriptIn(final File directory) {
+    public WithScriptCreated createScriptIn(final Path directory) {
         requireNonNull(directory);
 
-        if (!directory.isDirectory() && !directory.mkdirs()) {
-            throw new IllegalArgumentException("Failed to create directory");
+        if (!Files.isDirectory(directory)) {
+            uncheckedIo("Failed to create directory", () -> Files.createDirectories(directory));
         }
 
-        final Path path = directory.toPath().resolve(fileName);
-
+        final Path path = directory.resolve(fileName);
         try {
             final String file = uncheckedIo("Failed to create script", () -> {
                 Files.writeString(path, script, StandardCharsets.UTF_8);
@@ -78,20 +72,19 @@ public class CommandScript {
             throw e;
         }
 
-        return new WithScriptCreated(this, path);
+        return new WithScriptCreated(path);
     }
 
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class WithScriptCreated {
 
-        private final CommandScript script;
         private final Path path;
 
-        public <T> T with(final Function<CommandScript, T> mapper) {
+        public <T> T with(final Function<Path, T> mapper) {
             failIfFileDoesNotExists();
 
             try {
-                return mapper.apply(script);
+                return mapper.apply(path);
             } finally {
                 quietIo(() -> Files.deleteIfExists(path));
             }
