@@ -8,7 +8,7 @@ import lombok.Value;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 
 import static aa.sw.common.UncheckedIo.quietIo;
@@ -30,12 +30,32 @@ public class CommandScript {
     }
 
     private static String createScript(final String commands) {
-        return """
-                ##!/bin/bash
-                                
-                """
+        return bashScript()
+                .concat(sourceSdkmanInitScript(commands))
                 .concat(commands)
                 .concat("\n");
+    }
+
+    private static String bashScript() {
+        return """
+                #!/bin/bash
+                                
+                """;
+    }
+
+    private static String sourceSdkmanInitScript(final String commands) {
+        return commands.toLowerCase(Locale.ROOT).startsWith("sdk ")
+                ? sourceSdkmanInitScript()
+                : "";
+    }
+
+    private static String sourceSdkmanInitScript() {
+        return """
+                # We need to have this as otherwise the sdk commands will not work.
+                # This is a workaround, but the only one that worked.
+                [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+                                
+                """;
     }
 
     private static String createFileName(final String script) {

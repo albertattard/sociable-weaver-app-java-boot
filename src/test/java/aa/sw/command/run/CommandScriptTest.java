@@ -23,9 +23,31 @@ class CommandScriptTest {
 
         /* Then */
         final String expected = """
-                ##!/bin/bash
-                                
+                #!/bin/bash
+                
                 echo 'hello world'
+                """;
+        assertThat(contents)
+                .isEqualTo(expected);
+    }
+
+    @Test
+    void sourceSdkmanScriptWhenSdkCommandIsUsed() {
+        /* Given */
+        final String command = "sdk install java 17.0.1-oracle";
+
+        /* When */
+        final String contents = createAndReadScript(command);
+
+        /* Then */
+        final String expected = """
+                #!/bin/bash
+
+                # We need to have this as otherwise the sdk commands will not work.
+                # This is a workaround, but the only one that worked.
+                [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+                
+                sdk install java 17.0.1-oracle
                 """;
         assertThat(contents)
                 .isEqualTo(expected);
@@ -46,8 +68,8 @@ class CommandScriptTest {
 
         /* Then */
         final String expected = """
-                ##!/bin/bash
-                                
+                #!/bin/bash
+                
                 hub create \\
                   --private \\
                   --description 'Hello World Application (Java + Git + Gradle + Docker + GitHub Actions)' \\
