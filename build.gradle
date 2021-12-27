@@ -11,6 +11,8 @@ plugins {
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
+        // Fails to build in docker
+        // vendor = JvmVendorSpec.ORACLE
     }
 }
 
@@ -29,6 +31,7 @@ dependencies {
     /* Spring Web */
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-starter-websocket"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
     /* Guava */
     implementation "com.google.guava:guava:31.0.1-jre"
@@ -36,18 +39,6 @@ dependencies {
     /* Testing */
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testRuntimeOnly "org.pitest:pitest-junit5-plugin:0.15"
-}
-
-test {
-    useJUnitPlatform()
-    finalizedBy jacocoTestReport
-    testLogging {
-        events "failed", "passed", "skipped", "standard_out"
-        exceptionFormat "full"
-        showExceptions true
-        showCauses true
-        showStackTraces true
-    }
 }
 
 jacoco {
@@ -70,6 +61,10 @@ pitest {
     coverageThreshold = 40
 }
 
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+}
+
 sonarqube {
     properties {
         property "sonar.sourceEncoding", "UTF-8"
@@ -78,6 +73,3 @@ sonarqube {
 }
 tasks.named("sonarqube").configure { dependsOn check }
 
-check {
-    dependsOn "pitest"
-}
