@@ -69,9 +69,14 @@ public class BookController {
     }
 
     private static ResponseEntity<?> createSaveEntryErrorResponse(final Throwable e) {
-        final String message = e instanceof EntryNotFoundException
-                ? "Entry not found in chapter"
-                : "Encountered an unexpected error";
+        final String message;
+        if (e instanceof FileNotFoundException) {
+            message = "Chapter not found";
+        } else if (e instanceof EntryNotFoundException) {
+            message = "Entry not found in chapter";
+        } else {
+            message = "Encountered an unexpected error";
+        }
 
         return createUnprocessableEntityResponse(message);
     }
