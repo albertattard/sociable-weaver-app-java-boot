@@ -36,7 +36,7 @@ RUN apt-get update \
  && dpkg-reconfigure --frontend noninteractive tzdata \
  && apt-get install -y openjdk-17-jdk \
  && apt-get install -y curl \
-# && apt-get install -y git \
+ && apt-get install -y git \
 # && apt-get install -y tree \
  && apt-get install -y zip \
 # && apt-get install -y unzip \
