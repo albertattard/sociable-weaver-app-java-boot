@@ -35,6 +35,33 @@ Gradle
   $ ./gradlew build
   ```
 
+Docker
+
+- Create the docker local image
+
+  ```shell
+  $ docker build . -t app:local
+  ```
+
+- Run the docker local image
+
+  ```shell
+  $ docker run \
+      --name 'app-local' \
+      --publish 8077:8077 \
+      --volume '/Users/albertattard/Projects/albertattard:/ops/repositories' \
+      --volume '/Users/albertattard/Projects/workspace:/ops/workspace' \
+      --env ALLOWED_ORIGIN='http://localhost:8080' \
+      --rm \
+      app:local
+  ```
+
+- Connect to the docker container
+
+  ```shell
+  $ docker exec -it 'app-local' /bin/bash
+  ```
+
 Sonarqube
 
 - Start the local sonarqube server
