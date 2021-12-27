@@ -37,7 +37,7 @@ public class GitApplyPatchStrategy implements RunnableEntryExecutionStrategy {
 
     @Override
     public CommandResult execute(final CommandRunnerContext context) {
-        final File patchesFolder = new File(workspace, "patches").getAbsoluteFile();
+        final File patchesFolder = new File(workspace, ".patches").getAbsoluteFile();
         if (!patchesFolder.exists() && !patchesFolder.mkdirs()) {
             context.appendError("Failed to create the folder were to temporary save the patch");
             return CommandResult.finishedNotAsExpected();
