@@ -49,8 +49,8 @@ Docker
   $ docker run \
       --name 'app-local' \
       --publish 8077:8077 \
-      --volume '/Users/albertattard/Projects/albertattard:/ops/repositories' \
-      --volume '/Users/albertattard/Projects/workspace:/ops/workspace' \
+      --volume '/Users/albertattard/Projects/albertattard:/opt/repositories' \
+      --volume '/Users/albertattard/Projects/workspace:/opt/workspace' \
       --env ALLOWED_ORIGIN='http://localhost:8080' \
       --rm \
       app:local
