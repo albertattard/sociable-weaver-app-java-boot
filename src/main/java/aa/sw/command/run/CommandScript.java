@@ -31,7 +31,7 @@ public class CommandScript {
 
     private static String createScript(final String commands) {
         return bashScript()
-                .concat(sourceSdkmanInitScript(commands))
+                .concat(sourceSdkmanInitScript())
                 .concat(commands)
                 .concat("\n");
     }
@@ -41,12 +41,6 @@ public class CommandScript {
                 #!/bin/bash
                                 
                 """;
-    }
-
-    private static String sourceSdkmanInitScript(final String commands) {
-        return commands.toLowerCase(Locale.ROOT).startsWith("sdk ")
-                ? sourceSdkmanInitScript()
-                : "";
     }
 
     private static String sourceSdkmanInitScript() {

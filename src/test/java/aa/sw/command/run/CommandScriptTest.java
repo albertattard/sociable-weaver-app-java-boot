@@ -24,7 +24,11 @@ class CommandScriptTest {
         /* Then */
         final String expected = """
                 #!/bin/bash
-                
+
+                # We need to have this as otherwise the sdk commands will not work.
+                # This is a workaround, but the only one that worked.
+                [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+                                
                 echo 'hello world'
                 """;
         assertThat(contents)
@@ -46,7 +50,7 @@ class CommandScriptTest {
                 # We need to have this as otherwise the sdk commands will not work.
                 # This is a workaround, but the only one that worked.
                 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-                
+                                
                 sdk install java 17.0.1-oracle
                 """;
         assertThat(contents)
@@ -69,6 +73,10 @@ class CommandScriptTest {
         /* Then */
         final String expected = """
                 #!/bin/bash
+
+                # We need to have this as otherwise the sdk commands will not work.
+                # This is a workaround, but the only one that worked.
+                [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
                 
                 hub create \\
                   --private \\
