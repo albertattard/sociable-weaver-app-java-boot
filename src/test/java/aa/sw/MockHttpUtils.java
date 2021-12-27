@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.http.MediaType;
@@ -69,6 +70,7 @@ public class MockHttpUtils {
 
         final ObjectMapper mapper = JsonMapper.builder()
                 .addModule(new Jdk8Module())
+                .addModule(new JavaTimeModule())
                 .configure(SerializationFeature.WRAP_ROOT_VALUE, false)
                 .build();
         final ObjectWriter writer = mapper.writer().withDefaultPrettyPrinter();
