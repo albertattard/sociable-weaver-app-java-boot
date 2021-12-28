@@ -50,12 +50,11 @@ class ProcessRunnerTest {
                 .run();
 
         /* Then */
-        assertEquals(ProcessResult.finishedWithExitValue(0), result);
-
         final String expected = """
                 Albert Attard
                 """;
         assertEquals(expected, output.toString());
+        assertEquals(ProcessResult.finishedWithExitValue(0), result);
     }
 
     @Test
@@ -74,8 +73,6 @@ class ProcessRunnerTest {
                 .run();
 
         /* Then */
-        assertEquals(ProcessResult.timedOut(), result);
-
         final String expected = """
                 Albert Attard
                                 
@@ -84,6 +81,7 @@ class ProcessRunnerTest {
                 ================================================================================
                 """;
         assertEquals(expected, output.toString());
+        assertEquals(ProcessResult.timedOut(), result);
     }
 
     @Test
@@ -102,12 +100,11 @@ class ProcessRunnerTest {
                 .run();
 
         /* Then */
-        assertEquals(ProcessResult.finishedWithExitValue(0), result);
-
         final String expected = """
                 Albert Attard
                 """;
         assertEquals(expected, output.toString());
+        assertEquals(ProcessResult.finishedWithExitValue(0), result);
     }
 
     @Test
@@ -125,12 +122,11 @@ class ProcessRunnerTest {
                 .run();
 
         /* Then */
-        assertEquals(ProcessResult.finishedWithExitValue(1), result);
-
         final String expected = """
                 Albert Attard
                 """;
         assertEquals(expected, output.toString());
+        assertEquals(ProcessResult.finishedWithExitValue(1), result);
     }
 
     @Test
@@ -150,12 +146,11 @@ class ProcessRunnerTest {
                 .run();
 
         /* Then */
-        assertEquals(ProcessResult.finishedWithExitValue(0), result);
-
         final String expected = """
                 Albert and James
                 """;
         assertEquals(expected, output.toString());
+        assertEquals(ProcessResult.finishedWithExitValue(0), result);
     }
 
     private static File createWorkingDirectory() {

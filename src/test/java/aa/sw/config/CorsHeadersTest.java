@@ -24,7 +24,7 @@ class CorsHeadersTest {
 
     static {
         /* NOTE: RestTemplate makes use of the HttpUrlConnection class, which has the 'Origin' header as one of the
-           restricted headers.  The following will make the HttpUrlConnection send the 'Origin' header. */
+            restricted headers.  The following will make the HttpUrlConnection send the 'Origin' header. */
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
     }
 

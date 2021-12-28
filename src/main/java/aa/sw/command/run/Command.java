@@ -128,9 +128,7 @@ public class Command {
     }
 
     public String asFormattedString() {
-        return formattedWorkingDirectory()
-                .concat(formattedCommandPromptSymbol())
-                .concat(formattedEnvironmentVariables())
+        return formattedEnvironmentVariables()
                 .concat(formattedCommand());
     }
 

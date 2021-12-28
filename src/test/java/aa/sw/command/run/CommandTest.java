@@ -248,7 +248,7 @@ class CommandTest {
 
             /* Then */
             assertThat(formatted)
-                    .isEqualTo("$ echo 'hello world'");
+                    .isEqualTo("echo 'hello world'");
         }
 
         @Test
@@ -261,7 +261,7 @@ class CommandTest {
 
             /* Then */
             assertThat(formatted)
-                    .isEqualTo("$ echo \\\n 'hello world'");
+                    .isEqualTo("echo \\\n 'hello world'");
         }
 
         @Test
@@ -275,7 +275,7 @@ class CommandTest {
 
             /* Then */
             assertThat(formatted)
-                    .isEqualTo("work-dir $ echo 'hello world'");
+                    .isEqualTo("echo 'hello world'");
         }
 
         @Test
@@ -290,7 +290,7 @@ class CommandTest {
 
             /* Then */
             assertThat(formatted)
-                    .isEqualTo("work-dir $ HELLO_WORLD='' WORLD_HELLO='' echo 'hello world'");
+                    .isEqualTo("HELLO_WORLD='' WORLD_HELLO='' echo 'hello world'");
         }
     }
 
