@@ -1,9 +1,9 @@
 package aa.sw.config;
 
+import aa.sw.RestTemplateWrapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -20,13 +20,7 @@ class CorsHeadersTest {
     private AppProperties properties;
 
     @Autowired
-    private transient TestRestTemplate restTemplate;
-
-    static {
-        /* NOTE: RestTemplate makes use of the HttpUrlConnection class, which has the 'Origin' header as one of the
-            restricted headers.  The following will make the HttpUrlConnection send the 'Origin' header. */
-        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
-    }
+    private RestTemplateWrapper restTemplate;
 
     @Test
     void containsTheAllowedOriginInTheResponseHeaders() {

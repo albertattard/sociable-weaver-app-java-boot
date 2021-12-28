@@ -23,7 +23,6 @@ public class MockHttpUtils {
 
     private static final MediaType APPLICATION_JSON_UTF8 = createAppJsonUtf8();
 
-
     public static MockHttpServletRequestBuilder get(final String path, final Map<String, Object> parameters) {
         requireNonNull(path);
         requireNonNull(parameters);
