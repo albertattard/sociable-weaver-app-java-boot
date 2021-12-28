@@ -235,65 +235,6 @@ class CommandTest {
         }
     }
 
-    @Nested
-    class FormatCommandTest {
-
-        @Test
-        void formatSingleLineCommand() {
-            /* Given */
-            final Command command = Command.parse(List.of("echo 'hello world'"));
-
-            /* When */
-            final String formatted = command.asFormattedString();
-
-            /* Then */
-            assertThat(formatted)
-                    .isEqualTo("echo 'hello world'");
-        }
-
-        @Test
-        void formatMultiLineCommand() {
-            /* Given */
-            final Command command = Command.parse(List.of("echo \\", " 'hello world'"));
-
-            /* When */
-            final String formatted = command.asFormattedString();
-
-            /* Then */
-            assertThat(formatted)
-                    .isEqualTo("echo \\\n 'hello world'");
-        }
-
-        @Test
-        void formatCommandWithWorkingDirectory() {
-            /* Given */
-            final Command command = Command.parse(List.of("echo 'hello world'"))
-                    .withWorkingDirectory("work-dir");
-
-            /* When */
-            final String formatted = command.asFormattedString();
-
-            /* Then */
-            assertThat(formatted)
-                    .isEqualTo("echo 'hello world'");
-        }
-
-        @Test
-        void formatCommandWithWorkingDirectoryAndEnvironmentVariables() {
-            /* Given */
-            final Command command = Command.parse(List.of("echo 'hello world'"))
-                    .withWorkingDirectory("work-dir")
-                    .withEnvironmentVariables(List.of("HELLO_WORLD", "WORLD_HELLO"));
-
-            /* When */
-            final String formatted = command.asFormattedString();
-
-            /* Then */
-            assertThat(formatted)
-                    .isEqualTo("HELLO_WORLD='' WORLD_HELLO='' echo 'hello world'");
-        }
-    }
-
     private static Command create(final String commands) {
         return Command.builder()
                 .commands(commands)

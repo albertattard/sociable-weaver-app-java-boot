@@ -127,38 +127,6 @@ public class Command {
                 .toFile();
     }
 
-    public String asFormattedString() {
-        return formattedEnvironmentVariables()
-                .concat(formattedCommand());
-    }
-
-    private String formattedWorkingDirectory() {
-        return workingDirectory
-                .map(w -> w.concat(" "))
-                .orElse("");
-    }
-
-    private String formattedCommandPromptSymbol() {
-        return "$ ";
-    }
-
-    private String formattedEnvironmentVariables() {
-        return environmentVariables.
-                entrySet()
-                .stream()
-                /* TODO: How should we handle sensitive values like passwords or keys? */
-                .map(e -> String.format("%s='%s' ", e.getKey(), e.getValue()))
-                .collect(Collectors.joining());
-    }
-
-    private String formattedCommand() {
-        return commands;
-    }
-
-    public String toString() {
-        return asFormattedString();
-    }
-
     public static class CommandBuilder {
 
         public CommandBuilder readEnvironmentVariables(final List<String> environmentVariables) {

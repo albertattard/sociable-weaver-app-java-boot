@@ -56,8 +56,6 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
 
     @Override
     public CommandResult execute(final CommandRunnerContext context) {
-        context.appendLine(command.asFormattedString());
-
         return CommandScript.of(command.getCommands())
                 .createScriptIn(command.getWorkspace().resolve(".scripts"))
                 .with(path -> ProcessRunner.builder()
