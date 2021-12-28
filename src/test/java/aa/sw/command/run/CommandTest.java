@@ -132,7 +132,7 @@ class CommandTest {
     class InterpolateTest {
 
         @Test
-        void interpolatesVariableValues() {
+        void interpolatesSingleVariableValue() {
             /* Given */
             final List<String> parameters = List.of("echo '${NAME}'");
             final Map<String, String> values = Map.of("NAME", "hello world");
@@ -147,6 +147,39 @@ class CommandTest {
                     .isEqualTo(create(commands));
         }
 
+        @Test
+        void interpolatesSingleVariableWithMultipleValues() {
+            /* Given */
+            final List<String> parameters = List.of("echo '${NAME} ${NAME}'");
+            final Map<String, String> values = Map.of("NAME", "hello");
+
+            /* When */
+            final Command command = Command.parse(parameters)
+                    .withInterpolatedValues(values);
+
+            /* Then */
+            final String commands = "echo 'hello hello'";
+            assertThat(command)
+                    .isEqualTo(create(commands));
+        }
+
+        @Test
+        void interpolatesMultipleVariableValues() {
+            /* Given */
+            final List<String> parameters = List.of("echo '${NAME} from ${EMAIL}'");
+            final Map<String, String> values = Map.of(
+                    "NAME", "hello world",
+                    "EMAIL", "someone@somewhere.com");
+
+            /* When */
+            final Command command = Command.parse(parameters)
+                    .withInterpolatedValues(values);
+
+            /* Then */
+            final String commands = "echo 'hello world from someone@somewhere.com'";
+            assertThat(command)
+                    .isEqualTo(create(commands));
+        }
 
         @Test
         void interpolatesEnvironmentVariableValues() {

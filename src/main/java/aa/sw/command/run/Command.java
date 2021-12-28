@@ -93,18 +93,20 @@ public class Command {
         requireNonNull(input);
         requireNonNull(values);
 
-        final Pattern variablePattern = Pattern.compile("\\$\\{(.+)}");
+        final Pattern variablePattern = Pattern.compile("\\$\\{([A-Z0-9_-]+)}");
+
+        String interpolated = input;
 
         final Matcher matcher = variablePattern.matcher(input);
-        if (matcher.find()) {
+        while (matcher.find()) {
             final String variable = matcher.group(1);
             final String value = values.get(variable);
             if (value != null) {
-                return input.replace("${" + variable + "}", value);
+                interpolated = interpolated.replace("${" + variable + "}", value);
             }
         }
 
-        return input;
+        return interpolated;
     }
 
     private static Map<String, String> withInterpolatedValues(final Map<String, String> input, final Map<String,
