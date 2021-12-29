@@ -8,7 +8,6 @@ import lombok.Value;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Locale;
 import java.util.function.Function;
 
 import static aa.sw.common.UncheckedIo.quietIo;
@@ -39,6 +38,8 @@ public class CommandScript {
     private static String bashScript() {
         return """
                 #!/bin/bash
+                      
+                set -e
                                 
                 """;
     }
@@ -94,7 +95,17 @@ public class CommandScript {
 
         private final Path path;
 
+        public <T> T with(final Function<Path, T> mapper, final Runnable onFinally) {
+            requireNonNull(onFinally);
+            try {
+                return with(mapper);
+            } finally {
+                onFinally.run();
+            }
+        }
+
         public <T> T with(final Function<Path, T> mapper) {
+            requireNonNull(mapper);
             failIfFileDoesNotExists();
 
             try {

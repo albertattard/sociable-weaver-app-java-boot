@@ -88,14 +88,15 @@ class BookControllerTest {
             /* Given */
             final BookPath bookPath = BookPath.of(Path.of("path-to-book"));
             final Map<String, Object> params = Map.of("bookPath", bookPath);
-            when(service.openBook(bookPath)).thenReturn(Result.error(new Exception("Simulating an error")));
+            when(service.openBook(bookPath))
+                    .thenReturn(Result.error(new RuntimeException("Simulating an error")));
 
             /* When */
             final ResultActions result = makeOpenBookRequest(params);
 
             /* Then */
             result.andExpect(status().isUnprocessableEntity())
-                    .andExpect(jsonPath("message", is("Encountered an unexpected error")));
+                    .andExpect(jsonPath("message", is("Encountered an unexpected error (java.lang.RuntimeException: Simulating an error)")));
         }
 
         private ResultActions makeOpenBookRequest(final Map<String, Object> params) throws Exception {
@@ -147,14 +148,14 @@ class BookControllerTest {
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             when(service.readChapter(ChapterPath.of(bookPath, chapterPath)))
-                    .thenReturn(Result.error(new Exception("Simulating an error")));
+                    .thenReturn(Result.error(new RuntimeException("Simulating an error")));
 
             /* When */
             final ResultActions result = makeReadChapterRequest(params);
 
             /* Then */
             result.andExpect(status().isUnprocessableEntity())
-                    .andExpect(jsonPath("message", is("Encountered an unexpected error")));
+                    .andExpect(jsonPath("message", is("Encountered an unexpected error (java.lang.RuntimeException: Simulating an error)")));
         }
 
         private ResultActions makeReadChapterRequest(final Map<String, Object> params) throws Exception {
@@ -209,14 +210,14 @@ class BookControllerTest {
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
             final Chapter.Entry entry = createEntry();
             when(service.saveEntry(ChapterPath.of(bookPath, chapterPath), entry))
-                    .thenReturn(Result.error(new Exception("Simulating an error")));
+                    .thenReturn(Result.error(new RuntimeException("Simulating an error")));
 
             /* When */
             final ResultActions result = makeSaveEntryRequest(params, entry);
 
             /* Then */
             result.andExpect(status().isUnprocessableEntity())
-                    .andExpect(jsonPath("message", is("Encountered an unexpected error")));
+                    .andExpect(jsonPath("message", is("Encountered an unexpected error (java.lang.RuntimeException: Simulating an error)")));
         }
 
         private ResultActions makeSaveEntryRequest(final Map<String, Object> parameters, Chapter.Entry entry) throws Exception {
@@ -278,7 +279,7 @@ class BookControllerTest {
 
             /* Then */
             result.andExpect(status().isUnprocessableEntity())
-                    .andExpect(jsonPath("message", is("Encountered an unexpected error")));
+                    .andExpect(jsonPath("message", is("Encountered an unexpected error (java.lang.Exception: Simulating an error)")));
         }
 
         private CreateEntry createEntry() {

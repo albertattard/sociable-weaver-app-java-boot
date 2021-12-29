@@ -24,6 +24,8 @@ class CommandScriptTest {
         /* Then */
         final String expected = """
                 #!/bin/bash
+                      
+                set -e
 
                 # We need to have this as otherwise the sdk commands will not work.
                 # This is a workaround, but the only one that worked.
@@ -46,6 +48,8 @@ class CommandScriptTest {
         /* Then */
         final String expected = """
                 #!/bin/bash
+                      
+                set -e
 
                 # We need to have this as otherwise the sdk commands will not work.
                 # This is a workaround, but the only one that worked.
@@ -73,6 +77,8 @@ class CommandScriptTest {
         /* Then */
         final String expected = """
                 #!/bin/bash
+                      
+                set -e
 
                 # We need to have this as otherwise the sdk commands will not work.
                 # This is a workaround, but the only one that worked.

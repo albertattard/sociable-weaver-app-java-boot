@@ -56,17 +56,25 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
 
     @Override
     public CommandResult execute(final CommandRunnerContext context) {
+        final long startTimeInMills = System.currentTimeMillis();
+        final Runnable onComplete = () -> {
+            final long timeTakenInMillis = System.currentTimeMillis() - startTimeInMills;
+            context.appendLineF("Finished in %s (timeout set to %s)",
+                    formatDuration(Duration.ofMillis(timeTakenInMillis)), formatDuration(commandTimeout));
+        };
+
         return CommandScript.of(command.getCommands())
                 .createScriptIn(command.getWorkspace().resolve(".scripts"))
                 .with(path -> ProcessRunner.builder()
-                        .context(context)
-                        .command(List.of(path.toString()))
-                        .executionDirectory(command.getExecutionDirectory())
-                        .environmentVariables(command.getEnvironmentVariables())
-                        .commandTimeout(commandTimeout)
-                        .build()
-                        .run()
-                        .map(this::determineResult)
+                                .context(context)
+                                .command(List.of(path.toString()))
+                                .executionDirectory(command.getExecutionDirectory())
+                                .environmentVariables(command.getEnvironmentVariables())
+                                .commandTimeout(commandTimeout)
+                                .build()
+                                .run()
+                                .map(this::determineResult),
+                        onComplete
                 );
     }
 
@@ -86,6 +94,12 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
         };
     }
 
+    private static String formatDuration(final Duration duration) {
+        return duration.getSeconds() <= 1
+                ? "less than a second"
+                : String.format("%d seconds", duration.getSeconds());
+    }
+
     private void logExitValue(final int exitValue) {
         LOGGER.debug("Command {} finished with exit value {} (expecting {})", command, exitValue, expectedExitValue);
     }
@@ -100,7 +114,7 @@ public class CommandStrategy implements RunnableEntryExecutionStrategy {
         private final Command command;
         private boolean ignoreErrors;
         private int expectedExitValue = 0;
-        private Duration commandTimeout = Duration.ofMinutes(5);
+        private Duration commandTimeout = Duration.ofSeconds(5);
 
         private Builder(final Command command) {
             this.command = requireNonNull(command);

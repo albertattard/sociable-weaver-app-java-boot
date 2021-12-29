@@ -55,7 +55,7 @@ public class BookController {
     private static ResponseEntity<?> createOpenErrorResponse(final Throwable e) {
         final String message = e instanceof FileNotFoundException
                 ? "Book not found"
-                : "Encountered an unexpected error";
+                : formatUnexpectedError(e);
 
         return createUnprocessableEntityResponse(message);
     }
@@ -63,7 +63,7 @@ public class BookController {
     private static ResponseEntity<?> createReadChapterErrorResponse(final Throwable e) {
         final String message = e instanceof FileNotFoundException
                 ? "Chapter not found"
-                : "Encountered an unexpected error";
+                : formatUnexpectedError(e);
 
         return createUnprocessableEntityResponse(message);
     }
@@ -75,7 +75,7 @@ public class BookController {
         } else if (e instanceof EntryNotFoundException) {
             message = "Entry not found in chapter";
         } else {
-            message = "Encountered an unexpected error";
+            message = formatUnexpectedError(e);
         }
 
         return createUnprocessableEntityResponse(message);
@@ -86,5 +86,9 @@ public class BookController {
 
         return ResponseEntity.unprocessableEntity()
                 .body(Map.of("message", message));
+    }
+
+    private static String formatUnexpectedError(final Throwable e) {
+        return String.format("Encountered an unexpected error (%s)", e);
     }
 }
