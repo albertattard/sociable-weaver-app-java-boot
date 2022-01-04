@@ -40,26 +40,39 @@ Docker
 - Create the docker local image
 
   ```shell
-  $ docker build . -t app:local
+  $ docker build . -t sw-app:local
   ```
 
 - Run the docker local image
 
   ```shell
   $ docker run \
-      --name 'app-local' \
+      --name 'sw-app-local' \
       --publish 8077:8077 \
       --volume '/Users/albertattard/Projects/albertattard:/opt/repositories' \
       --volume '/Users/albertattard/Projects/workspace:/opt/workspace' \
       --env ALLOWED_ORIGIN='http://localhost:8080' \
       --rm \
-      app:local
+      sw-app:local
+  ```
+
+- Run the docker published image
+
+  ```shell
+  $ docker run \
+      --name 'sw-app-local' \
+      --publish 8077:8077 \
+      --volume '/Users/albertattard/Projects/albertattard:/opt/repositories' \
+      --volume '/Users/albertattard/Projects/workspace:/opt/workspace' \
+      --env ALLOWED_ORIGIN='http://localhost:8080' \
+      --rm \
+      albertattard/sociable-weaver-app-java-boot:latest
   ```
 
 - Connect to the docker container
 
   ```shell
-  $ docker exec -it 'app-local' /bin/bash
+  $ docker exec -it 'sw-app-local' /bin/bash
   ```
 
 Sonarqube
