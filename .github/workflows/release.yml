@@ -52,9 +52,6 @@ jobs:
           asset_name: sw-app.jar
           asset_content_type: application/zip
 
-      - name: Extract tag for Docker
-        run: echo \"GIT_TAG=`echo $(git describe --tags --abbrev=0)`\" >> $GITHUB_ENV
-
       - name: Log in to Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
@@ -66,4 +63,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/sociable-weaver-app-java-boot:${{ env.GIT_TAG }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/sociable-weaver-app-java-boot:${{ github.ref }}
