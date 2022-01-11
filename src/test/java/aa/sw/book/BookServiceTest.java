@@ -20,6 +20,9 @@ class BookServiceTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final BookService service = new BookService(mapper);
 
+    private static final Path BOOK_DIRECTORY = Path.of("build/fixtures/books");
+    private static final ChapterPath CHAPTER_PATH = ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE);
+
     @Nested
     class OpenBookTest {
 
@@ -89,7 +92,6 @@ class BookServiceTest {
 
             /* When */
             final Result<Chapter.Entry> result = service.createEntry(CHAPTER_PATH, entry);
-            System.out.println(result);
 
             /* Then */
             assertThat(result.isValuePresent()).isTrue();
@@ -157,6 +159,52 @@ class BookServiceTest {
                     .isEqualTo(Chapter.builder()
                             .entry(Fixtures.PROLOGUE_ENTRY_1)
                             .entry(updatedEntry)
+                            .build());
+        }
+    }
+
+    @Nested
+    class DeleteEntryTest {
+
+        private static final Path BOOK_DIRECTORY = Path.of("build/fixtures/books");
+
+        private static final ChapterPath CHAPTER_PATH = ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE);
+
+        @BeforeEach
+        void setUp() {
+            emptyDirectory(BOOK_DIRECTORY);
+            copyDirectory(Fixtures.BOOK_DIRECTORY, BOOK_DIRECTORY);
+        }
+
+        @Test
+        void returnsErrorWhenEntryNotFoundInChapter() {
+            /* Given */
+            final UUID entryId = UUID.randomUUID();
+
+            /* When */
+            final Result<Chapter.Entry> result = service.deleteEntry(CHAPTER_PATH, entryId);
+
+            /* Then */
+            assertThat(result)
+                    .isEqualTo(Result.error(new EntryNotFoundException()));
+        }
+
+        @Test
+        void deleteAndReturnTheEntry() throws Exception {
+            /* Given */
+            final UUID entryId = Fixtures.PROLOGUE_ENTRY_2.getId();
+
+            /* When */
+            final Result<Chapter.Entry> result = service.deleteEntry(CHAPTER_PATH, entryId);
+
+            /* Then */
+            assertThat(result.isValuePresent()).isTrue();
+            assertThat(result.value().getId()).isEqualTo(entryId);
+
+            final Chapter chapter = mapper.readValue(prologueFile(BOOK_DIRECTORY), Chapter.class);
+            assertThat(chapter)
+                    .isEqualTo(Chapter.builder()
+                            .entry(Fixtures.PROLOGUE_ENTRY_1)
                             .build());
         }
     }

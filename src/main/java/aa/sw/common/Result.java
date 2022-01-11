@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
@@ -69,6 +70,14 @@ public class Result<T> {
         return isValuePresent()
                 ? mapper.apply(value)
                 : Result.error(error);
+    }
+
+    public Result<T> with(final Consumer<T> consumer) {
+        requireNonNull(consumer);
+        if (isValuePresent()) {
+            consumer.accept(value);
+        }
+        return this;
     }
 
     @Override

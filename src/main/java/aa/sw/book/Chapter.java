@@ -29,7 +29,7 @@ public class Chapter {
 
     List<Entry> entries;
 
-    public int indexOf(final UUID id) {
+    public int indexOfEntryWithId(final UUID id) {
         return findEntryWithId(id)
                 .map(EntryIndex::getIndex)
                 .orElse(-1);
@@ -65,16 +65,6 @@ public class Chapter {
         return Chapter.ChapterBuilder.build(updated);
     }
 
-    public Pair<Chapter, Entry> createEntryAt(final int index, final String type) {
-        requireInInsertRange(index);
-        requireNonNull(type);
-
-        return randomUnusedEntryId()
-                .map(id -> Entry.builder().id(id).type(type).build())
-                .map(entry -> Pair.of(insertEntryAt(index, entry), entry))
-                .orElseThrow(() -> new RuntimeException("Failed to find an unused entry id"));
-    }
-
     public Chapter insertEntryAt(final int index, final Entry entry) {
         requireInInsertRange(index);
         requireNonNull(entry);
@@ -85,6 +75,15 @@ public class Chapter {
                 .orElseGet(() -> _insertEntryAt(index, entry));
     }
 
+    public Pair<Chapter, Entry> deleteEntryAt(final int index) {
+        requireInIndexRange(index);
+
+        final List<Entry> updated = new ArrayList<>(entries.size() - 1);
+        if (index > 0) {updated.addAll(entries.subList(0, index));}
+        if (index < entries.size() - 1) {updated.addAll(entries.subList(index, entries.size()));}
+        return Pair.of(ChapterBuilder.build(updated), entries.get(index));
+    }
+
     private Chapter _insertEntryAt(final int index, final Entry entry) {
         final List<Entry> updated = new ArrayList<>(entries.size() + 1);
         updated.addAll(entries);
@@ -92,21 +91,10 @@ public class Chapter {
         return ChapterBuilder.build(updated);
     }
 
-    public <T> T map(final Function<Chapter, T> mapper){
+    public <T> T map(final Function<Chapter, T> mapper) {
         requireNonNull(mapper);
 
         return mapper.apply(this);
-    }
-
-    private Optional<UUID> randomUnusedEntryId() {
-        for (int attempts = 0; attempts < 100; attempts++) {
-            final UUID uuid = UUID.randomUUID();
-            if (indexOf(uuid) == -1) {
-                return Optional.of(uuid);
-            }
-        }
-
-        return Optional.empty();
     }
 
     private Chapter duplicateEntryIdException(final EntryIndex duplicate) {

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
@@ -77,22 +76,29 @@ public class BookService {
     }
 
     public Result<Chapter.Entry> deleteEntry(final ChapterPath chapterPath, final UUID entryId) {
-        return Result.error(new UnsupportedOperationException("Not yet implemented"));
+        requireNonNull(chapterPath);
+        requireNonNull(entryId);
+
+        return readChapter(chapterPath)
+                .then(chapter -> indexOfEntryInChapter(entryId, chapter))
+                .then(pair -> pair.left().deleteEntryAt(pair.right()))
+                .then(pair -> {
+                    writeChapter(Pair.of(chapterPath, pair.left()));
+                    return pair.right();
+                });
     }
 
-    private static Pair<Chapter, Integer> indexOfEntryInChapter(final UUID id, final Chapter chapter) {
-        requireNonNull(id);
+    private static Pair<Chapter, Integer> indexOfEntryInChapter(final UUID entryId, final Chapter chapter) {
+        requireNonNull(entryId);
         requireNonNull(chapter);
 
-        final int index = chapter.indexOf(id);
-        if (index == -1) {
-            throw new EntryNotFoundException();
-        }
+        return chapter.findEntryWithId(entryId)
+                .map(index -> Pair.of(chapter, index.getIndex()))
+                .orElseThrow(EntryNotFoundException::new);
 
-        return Pair.of(chapter, index);
     }
 
-    private Pair<ChapterPath, Chapter> writeChapter(final Pair<ChapterPath, Chapter> chapterAndPath) throws IOException {
+    private Pair<ChapterPath, Chapter> writeChapter(final Pair<ChapterPath, Chapter> chapterAndPath) {
         requireNonNull(chapterAndPath);
 
         return chapterAndPath.with((path, chapter) -> writer.writeValue(path.getFile(), chapter));
