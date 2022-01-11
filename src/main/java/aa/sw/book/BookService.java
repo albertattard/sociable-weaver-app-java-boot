@@ -76,6 +76,10 @@ public class BookService {
                         .orElseThrow(() -> new RuntimeException("The entry was not found in file after it was created")));
     }
 
+    public Result<Chapter.Entry> deleteEntry(final ChapterPath chapterPath, final UUID entryId) {
+        return Result.error(new UnsupportedOperationException("Not yet implemented"));
+    }
+
     private static Pair<Chapter, Integer> indexOfEntryInChapter(final UUID id, final Chapter chapter) {
         requireNonNull(id);
         requireNonNull(chapter);

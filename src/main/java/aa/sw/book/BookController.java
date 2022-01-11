@@ -2,6 +2,7 @@ package aa.sw.book;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 
@@ -26,14 +28,14 @@ public class BookController {
     @GetMapping("/book")
     public ResponseEntity<?> openBook(@RequestParam("bookPath") final Path bookPath) {
         return service.openBook(BookPath.of(bookPath))
-                .map(ResponseEntity::ok, BookController::createOpenErrorResponse);
+                .map(ResponseEntity::ok, BookController::createBookErrorResponse);
     }
 
     @GetMapping("/chapter")
     public ResponseEntity<?> readChapter(@RequestParam("bookPath") final Path bookPath,
                                          @RequestParam("chapterPath") final Path chapterPath) {
         return service.readChapter(ChapterPath.of(bookPath, chapterPath))
-                .map(ResponseEntity::ok, BookController::createReadChapterErrorResponse);
+                .map(ResponseEntity::ok, BookController::createChapterErrorResponse);
     }
 
     @PostMapping("/entry")
@@ -41,7 +43,7 @@ public class BookController {
                                          @RequestParam("chapterPath") final Path chapterPath,
                                          @RequestBody final CreateEntry entry) {
         return service.createEntry(ChapterPath.of(bookPath, chapterPath), entry)
-                .map(ResponseEntity::ok, BookController::createSaveEntryErrorResponse);
+                .map(ResponseEntity::ok, BookController::createEntryErrorResponse);
     }
 
     @PutMapping("/entry")
@@ -49,10 +51,18 @@ public class BookController {
                                        @RequestParam("chapterPath") final Path chapterPath,
                                        @RequestBody final Chapter.Entry entry) {
         return service.saveEntry(ChapterPath.of(bookPath, chapterPath), entry)
-                .map(ResponseEntity::ok, BookController::createSaveEntryErrorResponse);
+                .map(ResponseEntity::ok, BookController::createEntryErrorResponse);
     }
 
-    private static ResponseEntity<?> createOpenErrorResponse(final Throwable e) {
+    @DeleteMapping("/entry")
+    public ResponseEntity<?> deleteEntry(@RequestParam("bookPath") final Path bookPath,
+                                         @RequestParam("chapterPath") final Path chapterPath,
+                                         @RequestParam("entryId") final UUID entryId) {
+        return service.deleteEntry(ChapterPath.of(bookPath, chapterPath), entryId)
+                .map(ResponseEntity::ok, BookController::createEntryErrorResponse);
+    }
+
+    private static ResponseEntity<?> createBookErrorResponse(final Throwable e) {
         final String message = e instanceof FileNotFoundException
                 ? "Book not found"
                 : formatUnexpectedError(e);
@@ -60,7 +70,7 @@ public class BookController {
         return createUnprocessableEntityResponse(message);
     }
 
-    private static ResponseEntity<?> createReadChapterErrorResponse(final Throwable e) {
+    private static ResponseEntity<?> createChapterErrorResponse(final Throwable e) {
         final String message = e instanceof FileNotFoundException
                 ? "Chapter not found"
                 : formatUnexpectedError(e);
@@ -68,7 +78,7 @@ public class BookController {
         return createUnprocessableEntityResponse(message);
     }
 
-    private static ResponseEntity<?> createSaveEntryErrorResponse(final Throwable e) {
+    private static ResponseEntity<?> createEntryErrorResponse(final Throwable e) {
         final String message;
         if (e instanceof FileNotFoundException) {
             message = "Chapter not found";

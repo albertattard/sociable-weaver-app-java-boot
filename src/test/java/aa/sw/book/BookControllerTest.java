@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
 
+import static aa.sw.MockHttpUtils.delete;
 import static aa.sw.MockHttpUtils.get;
 import static aa.sw.MockHttpUtils.post;
 import static aa.sw.MockHttpUtils.put;
@@ -234,7 +235,7 @@ class BookControllerTest {
             final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            final CreateEntry entry = createEntry();
+            final CreateEntry entry = createCreateEntry();
             when(service.createEntry(ChapterPath.of(bookPath, chapterPath), entry))
                     .thenReturn(Result.value(BookControllerTest.createEntry()));
 
@@ -252,7 +253,7 @@ class BookControllerTest {
             final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            final CreateEntry entry = createEntry();
+            final CreateEntry entry = createCreateEntry();
             when(service.createEntry(ChapterPath.of(bookPath, chapterPath), entry))
                     .thenReturn(Result.error(new EntryNotFoundException()));
 
@@ -270,7 +271,7 @@ class BookControllerTest {
             final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            final CreateEntry entry = createEntry();
+            final CreateEntry entry = createCreateEntry();
             when(service.createEntry(ChapterPath.of(bookPath, chapterPath), entry))
                     .thenReturn(Result.error(new Exception("Simulating an error")));
 
@@ -282,16 +283,82 @@ class BookControllerTest {
                     .andExpect(jsonPath("message", is("Encountered an unexpected error (java.lang.Exception: Simulating an error)")));
         }
 
-        private CreateEntry createEntry() {
-            return CreateEntry.builder().type("markdown").afterEntryWithId(UUID.randomUUID()).build();
-        }
-
         private ResultActions makeCreateEntryRequest(final Map<String, Object> parameters, CreateEntry entry) throws Exception {
             return mockMvc.perform(post("/api/entry", parameters, entry));
+        }
+
+        private CreateEntry createCreateEntry() {
+            return CreateEntry.builder().type("markdown").afterEntryWithId(UUID.randomUUID()).build();
+        }
+    }
+
+    @Nested
+    class DeleteEntryTest {
+
+        @Test
+        void deleteAndReturnEntry() throws Exception {
+            /* Given */
+            final Path bookPath = Path.of("path-to-book");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final UUID entryId = UUID.randomUUID();
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath, "entryId", entryId);
+            when(service.deleteEntry(ChapterPath.of(bookPath, chapterPath), entryId))
+                    .thenReturn(Result.value(createEntryBuilder().id(entryId).build()));
+
+            /* When */
+            final ResultActions result = makeDeleteEntryRequest(params);
+
+            /* Then */
+            result.andExpect(status().isOk())
+                    .andExpect(jsonPath("id", is(entryId.toString())));
+        }
+
+        @Test
+        void returnClientErrorWhenEntryDoesNotExists() throws Exception {
+            /* Given */
+            final Path bookPath = Path.of("path-to-book");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final UUID entryId = UUID.randomUUID();
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath, "entryId", entryId);
+            when(service.deleteEntry(ChapterPath.of(bookPath, chapterPath), entryId))
+                    .thenReturn(Result.error(new EntryNotFoundException()));
+
+            /* When */
+            final ResultActions result = makeDeleteEntryRequest(params);
+
+            /* Then */
+            result.andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("message", is("Entry not found in chapter")));
+        }
+
+        @Test
+        void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
+            /* Given */
+            final Path bookPath = Path.of("path-to-book");
+            final Path chapterPath = Path.of("path-to-chapter-1");
+            final UUID entryId = UUID.randomUUID();
+            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath, "entryId", entryId);
+            when(service.deleteEntry(ChapterPath.of(bookPath, chapterPath), entryId))
+                    .thenReturn(Result.error(new Exception("Simulating an error")));
+
+            /* When */
+            final ResultActions result = makeDeleteEntryRequest(params);
+
+            /* Then */
+            result.andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("message", is("Encountered an unexpected error (java.lang.Exception: Simulating an error)")));
+        }
+
+        private ResultActions makeDeleteEntryRequest(final Map<String, Object> parameters) throws Exception {
+            return mockMvc.perform(delete("/api/entry", parameters));
         }
     }
 
     private static Chapter.Entry createEntry() {
-        return Chapter.Entry.builder().id(UUID.randomUUID()).type("markdown").build();
+        return createEntryBuilder().build();
+    }
+
+    private static Chapter.Entry.EntryBuilder createEntryBuilder() {
+        return Chapter.Entry.builder().id(UUID.randomUUID()).type("markdown");
     }
 }

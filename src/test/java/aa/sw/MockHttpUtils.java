@@ -50,6 +50,14 @@ public class MockHttpUtils {
         return populateRequest(MockMvcRequestBuilders.put(path), parameters, body);
     }
 
+    public static MockHttpServletRequestBuilder delete(final String path,
+                                                       final Map<String, Object> parameters) {
+        requireNonNull(path);
+        requireNonNull(parameters);
+
+        return setParameters(MockMvcRequestBuilders.delete(path), parameters);
+    }
+
     private static MockHttpServletRequestBuilder populateRequest(final MockHttpServletRequestBuilder builder,
                                                                  final Map<String, Object> parameters,
                                                                  final Object body) {
