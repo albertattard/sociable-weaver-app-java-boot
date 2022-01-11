@@ -100,7 +100,6 @@ public class BookService {
 
     private Pair<ChapterPath, Chapter> writeChapter(final Pair<ChapterPath, Chapter> chapterAndPath) {
         requireNonNull(chapterAndPath);
-
         return chapterAndPath.with((path, chapter) -> writer.writeValue(path.getFile(), chapter));
     }
 }

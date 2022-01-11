@@ -190,7 +190,26 @@ class BookServiceTest {
         }
 
         @Test
-        void deleteAndReturnTheEntry() throws Exception {
+        void deleteFirstEntryAndReturnTheEntry() throws Exception {
+            /* Given */
+            final UUID entryId = Fixtures.PROLOGUE_ENTRY_1.getId();
+
+            /* When */
+            final Result<Chapter.Entry> result = service.deleteEntry(CHAPTER_PATH, entryId);
+
+            /* Then */
+            assertThat(result.isValuePresent()).isTrue();
+            assertThat(result.value().getId()).isEqualTo(entryId);
+
+            final Chapter chapter = mapper.readValue(prologueFile(BOOK_DIRECTORY), Chapter.class);
+            assertThat(chapter)
+                    .isEqualTo(Chapter.builder()
+                            .entry(Fixtures.PROLOGUE_ENTRY_2)
+                            .build());
+        }
+
+        @Test
+        void deleteLastEntryAndReturnTheEntry() throws Exception {
             /* Given */
             final UUID entryId = Fixtures.PROLOGUE_ENTRY_2.getId();
 

@@ -79,9 +79,17 @@ public class Chapter {
         requireInIndexRange(index);
 
         final List<Entry> updated = new ArrayList<>(entries.size() - 1);
-        if (index > 0) {updated.addAll(entries.subList(0, index));}
-        if (index < entries.size() - 1) {updated.addAll(entries.subList(index, entries.size()));}
+        if (isNotTheFirstEntry(index)) {updated.addAll(entries.subList(0, index));}
+        if (isNotTheLastEntry(index)) {updated.addAll(entries.subList(index + 1, entries.size()));}
         return Pair.of(ChapterBuilder.build(updated), entries.get(index));
+    }
+
+    private boolean isNotTheFirstEntry(final int index) {
+        return index > 0;
+    }
+
+    private boolean isNotTheLastEntry(final int index) {
+        return index < entries.size() - 1;
     }
 
     private Chapter _insertEntryAt(final int index, final Entry entry) {
