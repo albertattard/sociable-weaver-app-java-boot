@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "type": "chapter",
+      "id": "6656a93a-c9ec-4f5b-87bb-6819a3c8a329",
+      "parameters": [
+        "Hello World"
+      ]
+    },
+    {
+      "type": "markdown",
+      "id": "c7a233ba-5327-447c-ae63-aa53f79c3791",
+      "parameters": [
+        "Automation"
+      ]
+    }
+  ]
+}
