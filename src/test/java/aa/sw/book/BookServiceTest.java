@@ -1,27 +1,30 @@
 package aa.sw.book;
 
 import aa.sw.common.Result;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.Answer;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
-import static aa.sw.IoUtils.copyDirectory;
-import static aa.sw.IoUtils.emptyDirectory;
-import static aa.sw.book.Fixtures.prologueFile;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 class BookServiceTest {
 
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final BookService service = new BookService(mapper);
+    private final BookData data = mock(BookData.class);
+    private final BookService service = new BookService(data);
 
-    private static final Path BOOK_DIRECTORY = Path.of("build/fixtures/books");
-    private static final ChapterPath CHAPTER_PATH = ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE);
+    @BeforeEach
+    void setUp() {
+        reset(data);
+    }
 
     @Nested
     class OpenBookTest {
@@ -30,6 +33,7 @@ class BookServiceTest {
         void openBook() {
             /* Given */
             final BookPath bookPath = BookPath.of(Fixtures.BOOK_DIRECTORY);
+            when(data.readBook(eq(bookPath.getPath()))).thenReturn(Result.value(Fixtures.BOOK));
 
             /* When */
             final Result<Book> book = service.openBook(bookPath);
@@ -45,8 +49,14 @@ class BookServiceTest {
 
         @Test
         void readChapter() {
-            final Result<Chapter> chapter = service.readChapter(Fixtures.PROLOGUE_CHAPTER_PATH);
+            /* Given */
+            final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
+            when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
 
+            /* When */
+            final Result<Chapter> chapter = service.readChapter(chapterPath);
+
+            /* Then */
             assertThat(chapter)
                     .isEqualTo(Result.value(Fixtures.PROLOGUE));
         }
@@ -55,16 +65,6 @@ class BookServiceTest {
     @Nested
     class CreateEntryTest {
 
-        private static final Path BOOK_DIRECTORY = Path.of("build/fixtures/books");
-
-        private static final ChapterPath CHAPTER_PATH = ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE);
-
-        @BeforeEach
-        void setUp() {
-            emptyDirectory(BOOK_DIRECTORY);
-            copyDirectory(Fixtures.BOOK_DIRECTORY, BOOK_DIRECTORY);
-        }
-
         @Test
         void returnsErrorWhenEntryNotFoundInChapter() {
             /* Given */
@@ -72,9 +72,11 @@ class BookServiceTest {
                     .type("markdown")
                     .afterEntryWithId(UUID.randomUUID())
                     .build();
+            final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
+            when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
 
             /* When */
-            final Result<Chapter.Entry> result = service.createEntry(CHAPTER_PATH, entry);
+            final Result<Chapter.Entry> result = service.createEntry(chapterPath, entry);
 
             /* Then */
             assertThat(result)
@@ -83,47 +85,29 @@ class BookServiceTest {
 
 
         @Test
-        void createAndReturnTheWrittenEntry() throws Exception {
+        void createAndReturnTheWrittenEntry() {
             /* Given */
             final CreateEntry entry = CreateEntry.builder()
                     .type("markdown")
                     .afterEntryWithId(Fixtures.PROLOGUE_ENTRY_2.getId())
                     .build();
+            final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
+            when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
+            when(data.writeChapter(eq(chapterPath.getPath()), any(Chapter.class))).thenAnswer(
+                    (Answer<Result<Chapter>>) invocation -> Result.value((Chapter) invocation.getArguments()[1])
+            );
 
             /* When */
-            final Result<Chapter.Entry> result = service.createEntry(CHAPTER_PATH, entry);
+            final Result<Chapter.Entry> result = service.createEntry(chapterPath, entry);
 
             /* Then */
             assertThat(result.isValuePresent()).isTrue();
             assertThat(result.value().getType()).isEqualTo("markdown");
-
-            final Chapter chapter = mapper.readValue(prologueFile(BOOK_DIRECTORY), Chapter.class);
-            assertThat(chapter)
-                    .isEqualTo(Chapter.builder()
-                            .entry(Fixtures.PROLOGUE_ENTRY_1)
-                            .entry(Fixtures.PROLOGUE_ENTRY_2)
-                            .entry(result.value())
-                            .build());
         }
     }
 
     @Nested
     class SaveEntryTest {
-
-        private static final Path BOOK_DIRECTORY = Path.of("build/fixtures/books");
-
-        private ChapterPath chapterPath;
-
-        @BeforeEach
-        void setUp() {
-            emptyDirectory(BOOK_DIRECTORY);
-            copyDirectory(Fixtures.BOOK_DIRECTORY, BOOK_DIRECTORY);
-
-            /* Create the path after copying the fixtures as otherwise the path will be wrongly constructed.  If the
-                book path is not a directory, then it will be assumed as the book path.
-                TODO: we may need to reconsider this approach as it can be misleading.  */
-            chapterPath = ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE);
-        }
 
         @Test
         void returnsErrorWhenEntryNotFoundInChapter() {
@@ -131,6 +115,8 @@ class BookServiceTest {
             final Chapter.Entry entry = Fixtures.PROLOGUE_ENTRY_2.toBuilder()
                     .id(UUID.randomUUID())
                     .build();
+            final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
+            when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
 
             /* When */
             final Result<Chapter.Entry> result = service.saveEntry(chapterPath, entry);
@@ -146,6 +132,11 @@ class BookServiceTest {
             final Chapter.Entry updatedEntry = Fixtures.PROLOGUE_ENTRY_2.toBuilder()
                     .parameters(List.of("I make mistakes, and I make more mistakes, and some more, and that's how I learn."))
                     .build();
+            final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
+            when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
+            when(data.writeChapter(eq(chapterPath.getPath()), any(Chapter.class))).thenAnswer(
+                    (Answer<Result<Chapter>>) invocation -> Result.value((Chapter) invocation.getArguments()[1])
+            );
 
             /* When */
             final Result<Chapter.Entry> result = service.saveEntry(chapterPath, updatedEntry);
@@ -153,36 +144,21 @@ class BookServiceTest {
             /* Then */
             assertThat(result)
                     .isEqualTo(Result.value(updatedEntry));
-
-            final Chapter chapter = mapper.readValue(prologueFile(BOOK_DIRECTORY), Chapter.class);
-            assertThat(chapter)
-                    .isEqualTo(Chapter.builder()
-                            .entry(Fixtures.PROLOGUE_ENTRY_1)
-                            .entry(updatedEntry)
-                            .build());
         }
     }
 
     @Nested
     class DeleteEntryTest {
 
-        private static final Path BOOK_DIRECTORY = Path.of("build/fixtures/books");
-
-        private static final ChapterPath CHAPTER_PATH = ChapterPath.of(BOOK_DIRECTORY, Fixtures.PROLOGUE_FILE);
-
-        @BeforeEach
-        void setUp() {
-            emptyDirectory(BOOK_DIRECTORY);
-            copyDirectory(Fixtures.BOOK_DIRECTORY, BOOK_DIRECTORY);
-        }
-
         @Test
         void returnsErrorWhenEntryNotFoundInChapter() {
             /* Given */
             final UUID entryId = UUID.randomUUID();
+            final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
+            when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
 
             /* When */
-            final Result<Chapter.Entry> result = service.deleteEntry(CHAPTER_PATH, entryId);
+            final Result<Chapter.Entry> result = service.deleteEntry(chapterPath, entryId);
 
             /* Then */
             assertThat(result)
@@ -190,41 +166,37 @@ class BookServiceTest {
         }
 
         @Test
-        void deleteFirstEntryAndReturnTheEntry() throws Exception {
+        void deleteFirstEntryAndReturnTheEntry() {
             /* Given */
             final UUID entryId = Fixtures.PROLOGUE_ENTRY_1.getId();
+            final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
+            final Chapter writtenChapter = Chapter.builder().entry(Fixtures.PROLOGUE_ENTRY_2).build();
+            when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
+            when(data.writeChapter(eq(chapterPath.getPath()), eq(writtenChapter))).thenReturn(Result.value(writtenChapter));
 
             /* When */
-            final Result<Chapter.Entry> result = service.deleteEntry(CHAPTER_PATH, entryId);
+            final Result<Chapter.Entry> result = service.deleteEntry(chapterPath, entryId);
 
             /* Then */
             assertThat(result.isValuePresent()).isTrue();
             assertThat(result.value().getId()).isEqualTo(entryId);
-
-            final Chapter chapter = mapper.readValue(prologueFile(BOOK_DIRECTORY), Chapter.class);
-            assertThat(chapter)
-                    .isEqualTo(Chapter.builder()
-                            .entry(Fixtures.PROLOGUE_ENTRY_2)
-                            .build());
         }
 
         @Test
-        void deleteLastEntryAndReturnTheEntry() throws Exception {
+        void deleteLastEntryAndReturnTheEntry() {
             /* Given */
             final UUID entryId = Fixtures.PROLOGUE_ENTRY_2.getId();
+            final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
+            final Chapter writtenChapter = Chapter.builder().entry(Fixtures.PROLOGUE_ENTRY_1).build();
+            when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
+            when(data.writeChapter(eq(chapterPath.getPath()), eq(writtenChapter))).thenReturn(Result.value(writtenChapter));
 
             /* When */
-            final Result<Chapter.Entry> result = service.deleteEntry(CHAPTER_PATH, entryId);
+            final Result<Chapter.Entry> result = service.deleteEntry(chapterPath, entryId);
 
             /* Then */
             assertThat(result.isValuePresent()).isTrue();
             assertThat(result.value().getId()).isEqualTo(entryId);
-
-            final Chapter chapter = mapper.readValue(prologueFile(BOOK_DIRECTORY), Chapter.class);
-            assertThat(chapter)
-                    .isEqualTo(Chapter.builder()
-                            .entry(Fixtures.PROLOGUE_ENTRY_1)
-                            .build());
         }
     }
 }
