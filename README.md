@@ -21,19 +21,31 @@ Gradle
   $ ./gradlew check
   ```
 
+- Create only the application Jar file (without running the tests)
+
+  ```shell
+  $ ./gradlew bootJar
+  ```
+
+- Build the application
+
+  ```shell
+  $ ./gradlew build
+  ```
+
 - Run the application locally, ideal for development
 
   ```shell
   $ ALLOWED_ORIGIN="http://localhost:8080" ./gradlew bootRun
   ```
 
-  Note that by default the app accepts requests from: `https://sociable-weaver.github.io`.
+  Alternatively you can run it using `java -jar`
 
-- Build the application for production
-
-  ```shell
-  $ ./gradlew build
+- ```shell
+  $ ALLOWED_ORIGIN="http://localhost:8080" java -jar build/libs/sociable-weaver-app-java-boot.jar
   ```
+
+  Note that by default the app accepts requests from: `https://sociable-weaver.github.io`.
 
 Docker
 
