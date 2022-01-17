@@ -29,12 +29,6 @@ public class Chapter {
 
     List<Entry> entries;
 
-    public int indexOfEntryWithId(final UUID id) {
-        return findEntryWithId(id)
-                .map(EntryIndex::getIndex)
-                .orElse(-1);
-    }
-
     public Optional<EntryIndex> findEntryWithId(final UUID id) {
         return findEntry(entry -> Objects.equals(id, entry.getId()));
     }
