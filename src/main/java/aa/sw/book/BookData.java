@@ -24,15 +24,22 @@ public class BookData {
     }
 
     public Result<Book> readBook(final Path path) {
+        requireNonNull(path);
+
         return read(path, Book.class)
                 .then(book -> book.withBookPath(path));
     }
 
     public Result<Chapter> readChapter(final Path path) {
+        requireNonNull(path);
+
         return read(path, Chapter.class);
     }
 
     public Result<Chapter> writeChapter(final Path path, final Chapter chapter) {
+        requireNonNull(path);
+        requireNonNull(chapter);
+
         return write(path, Chapter.class, chapter);
     }
 
