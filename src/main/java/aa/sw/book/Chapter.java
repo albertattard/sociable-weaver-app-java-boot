@@ -40,22 +40,23 @@ public class Chapter {
     }
 
     public String getTitle() {
-        return x("chapter", "Title");
+        return readMultiPartProperty("chapter", "Title");
     }
 
     public String getDescription() {
-        return x("chapter", "Description");
+        return readMultiPartProperty("chapter", "Description");
     }
 
-    private String x(final String type, final String part) {
-        return x(type, part, () -> "");
+    private String readMultiPartProperty(final String type, final String part) {
+        return readMultiPartProperty(type, part, () -> "");
     }
 
-    private String x(final String type, final String part, final Supplier<String> defaultValue) {
+    private String readMultiPartProperty(final String type, final String part, final Supplier<String> defaultValue) {
         return entries.stream()
-                .filter(e -> type.equals(e.getType()))
+                .filter(entry -> type.equals(entry.getType()))
                 .map(Entry::getMultipartParameters)
-                .flatMap(m -> m.getPart(part).stream())
+                .map(parameters -> parameters.getPart(part))
+                .map(parameters -> String.join("\n", parameters))
                 .findFirst()
                 .orElseGet(defaultValue);
     }

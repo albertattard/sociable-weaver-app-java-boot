@@ -3,6 +3,7 @@ package aa.sw.book;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,9 +15,31 @@ class ChapterTest {
     class TocTest {
 
         @Test
-        void returnTheChapterTitleAndDescription() {
+        void returnEmptyStringWhenTheChapterEntryIsNotThere() {
             /* Given */
-            final Chapter chapter = Chapter.of("chapter-path", "Title", "Description");
+            final Chapter chapter = Chapter.builder()
+                    .chapterPath("chapter-path")
+                    .build();
+
+            /* When */
+            final String title = chapter.getTitle();
+            final String description = chapter.getDescription();
+
+            /* Then */
+            assertThat(title).isEqualTo("");
+            assertThat(description).isEqualTo("");
+        }
+
+        @Test
+        void returnTheChapterTitleAndAnEmptyDescription() {
+            /* Given */
+            final Entry entry = Entry.builder()
+                    .type("chapter")
+                    .parameters(List.of("Title:1", "Title")).build();
+            final Chapter chapter = Chapter.builder()
+                    .chapterPath("chapter-path")
+                    .entry(entry)
+                    .build();
 
             /* When */
             final String title = chapter.getTitle();
@@ -24,7 +47,27 @@ class ChapterTest {
 
             /* Then */
             assertThat(title).isEqualTo("Title");
-            assertThat(description).isEqualTo("Description");
+            assertThat(description).isEqualTo("");
+        }
+
+        @Test
+        void returnTheChapterTitleAndDescription() {
+            /* Given */
+            final Entry entry = Entry.builder()
+                    .type("chapter")
+                    .parameters(List.of("Title:1", "Title", "Description:2", "A long", "description")).build();
+            final Chapter chapter = Chapter.builder()
+                    .chapterPath("chapter-path")
+                    .entry(entry)
+                    .build();
+
+            /* When */
+            final String title = chapter.getTitle();
+            final String description = chapter.getDescription();
+
+            /* Then */
+            assertThat(title).isEqualTo("Title");
+            assertThat(description).isEqualTo("A long\ndescription");
         }
     }
 
