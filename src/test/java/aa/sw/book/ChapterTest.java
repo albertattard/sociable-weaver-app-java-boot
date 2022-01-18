@@ -11,6 +11,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ChapterTest {
 
     @Nested
+    class TocTest {
+
+        @Test
+        void returnTheChapterTitleAndDescription() {
+            /* Given */
+            final Chapter chapter = Chapter.of("chapter-path", "Title", "Description");
+
+            /* When */
+            final String title = chapter.getTitle();
+            final String description = chapter.getDescription();
+
+            /* Then */
+            assertThat(title).isEqualTo("Title");
+            assertThat(description).isEqualTo("Description");
+        }
+    }
+
+    @Nested
     class IndexOfTest {
 
         @Test
@@ -34,22 +52,25 @@ class ChapterTest {
         @Test
         void insertEntryInAnEmptyChapter() {
             /* Given */
-            final Chapter chapter = Chapter.builder().build();
-            final Chapter.Entry entry = Chapter.Entry.builder().id(UUID.randomUUID()).build();
+            final Chapter chapter = Chapter.builder().chapterPath("chapter-path.json").build();
+            final Entry entry = Entry.builder().id(UUID.randomUUID()).build();
 
             /* When */
             final Chapter result = chapter.insertEntryAt(0, entry);
 
             /* Then */
             assertThat(result)
-                    .isEqualTo(Chapter.builder().entry(entry).build());
+                    .isEqualTo(Chapter.builder()
+                            .chapterPath("chapter-path.json")
+                            .entry(entry)
+                            .build());
         }
 
         @Test
         void insertsEntryAtGivenIndex() {
             /* Given */
             final Chapter chapter = Fixtures.PROLOGUE;
-            final Chapter.Entry entry = Chapter.Entry.builder().id(UUID.randomUUID()).build();
+            final Entry entry = Entry.builder().id(UUID.randomUUID()).build();
 
             /* When */
             final Chapter result = chapter.insertEntryAt(1, entry);
@@ -57,6 +78,7 @@ class ChapterTest {
             /* Then */
             assertThat(result)
                     .isEqualTo(Chapter.builder()
+                            .chapterPath("00-prologue.json")
                             .entry(Fixtures.PROLOGUE_ENTRY_1)
                             .entry(entry)
                             .entry(Fixtures.PROLOGUE_ENTRY_2)
@@ -67,7 +89,7 @@ class ChapterTest {
         void insertsEntryAtTheEnd() {
             /* Given */
             final Chapter chapter = Fixtures.PROLOGUE;
-            final Chapter.Entry entry = Chapter.Entry.builder().id(UUID.randomUUID()).build();
+            final Entry entry = Entry.builder().id(UUID.randomUUID()).build();
 
             /* When */
             final Chapter result = chapter.insertEntryAt(2, entry);
@@ -75,6 +97,7 @@ class ChapterTest {
             /* Then */
             assertThat(result)
                     .isEqualTo(Chapter.builder()
+                            .chapterPath("00-prologue.json")
                             .entry(Fixtures.PROLOGUE_ENTRY_1)
                             .entry(Fixtures.PROLOGUE_ENTRY_2)
                             .entry(entry)

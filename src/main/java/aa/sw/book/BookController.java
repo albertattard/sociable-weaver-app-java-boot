@@ -49,7 +49,7 @@ public class BookController {
     @PutMapping("/entry")
     public ResponseEntity<?> saveEntry(@RequestParam("bookPath") final Path bookPath,
                                        @RequestParam("chapterPath") final Path chapterPath,
-                                       @RequestBody final Chapter.Entry entry) {
+                                       @RequestBody final Entry entry) {
         return service.saveEntry(ChapterPath.of(bookPath, chapterPath), entry)
                 .map(ResponseEntity::ok, BookController::createEntryErrorResponse);
     }

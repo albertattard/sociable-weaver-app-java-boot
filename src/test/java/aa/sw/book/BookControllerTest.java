@@ -22,6 +22,7 @@ import static aa.sw.MockHttpUtils.put;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,8 +47,8 @@ class BookControllerTest {
             final Book book = Book.builder()
                     .title("Test Book")
                     .description("Test Description")
-                    .chapter("Chapter 1", "Test chapter 1", "chapter-1")
-                    .chapter("Chapter 2", "Test chapter 2", "chapter-2")
+                    .chapter(Chapter.of("chapter-path-1", "Chapter 1", "Test chapter 1"))
+                    .chapter(Chapter.of("chapter-path-2", "Chapter 2", "Test chapter 2"))
                     .bookPath(bookPath.getPath())
                     .build();
             when(service.openBook(bookPath)).thenReturn(Result.value(book));
@@ -57,15 +58,18 @@ class BookControllerTest {
 
             /* Then */
             result.andExpect(status().isOk())
+                    .andDo(print())
                     .andExpect(jsonPath("title", is("Test Book")))
                     .andExpect(jsonPath("description", is("Test Description")))
                     .andExpect(jsonPath("chapters", hasSize(2)))
-                    .andExpect(jsonPath("chapters[0].title", is("Chapter 1")))
-                    .andExpect(jsonPath("chapters[0].description", is("Test chapter 1")))
-                    .andExpect(jsonPath("chapters[0].path", is("chapter-1")))
-                    .andExpect(jsonPath("chapters[1].title", is("Chapter 2")))
-                    .andExpect(jsonPath("chapters[1].description", is("Test chapter 2")))
-                    .andExpect(jsonPath("chapters[1].path", is("chapter-2")))
+                    .andExpect(jsonPath("chapters[0].chapterPath", is("chapter-path-1")))
+                    .andExpect(jsonPath("chapters[0].entries[0].type", is("chapter")))
+                    .andExpect(jsonPath("chapters[0].entries[0].parameters[1]", is("Chapter 1")))
+                    .andExpect(jsonPath("chapters[0].entries[0].parameters[3]", is("Test chapter 1")))
+                    .andExpect(jsonPath("chapters[1].chapterPath", is("chapter-path-2")))
+                    .andExpect(jsonPath("chapters[1].entries[0].type", is("chapter")))
+                    .andExpect(jsonPath("chapters[1].entries[0].parameters[1]", is("Chapter 2")))
+                    .andExpect(jsonPath("chapters[1].entries[0].parameters[3]", is("Test chapter 2")))
                     .andExpect(jsonPath("bookPath", is("path-to-book")));
         }
 
@@ -173,7 +177,7 @@ class BookControllerTest {
             final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            final Chapter.Entry entry = createEntry();
+            final Entry entry = createEntry();
             when(service.saveEntry(ChapterPath.of(bookPath, chapterPath), entry))
                     .thenReturn(Result.value(entry));
 
@@ -191,7 +195,7 @@ class BookControllerTest {
             final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            final Chapter.Entry entry = createEntry();
+            final Entry entry = createEntry();
             when(service.saveEntry(ChapterPath.of(bookPath, chapterPath), entry))
                     .thenReturn(Result.error(new EntryNotFoundException()));
 
@@ -209,7 +213,7 @@ class BookControllerTest {
             final Path bookPath = Path.of("path-to-book");
             final Path chapterPath = Path.of("path-to-chapter-1");
             final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            final Chapter.Entry entry = createEntry();
+            final Entry entry = createEntry();
             when(service.saveEntry(ChapterPath.of(bookPath, chapterPath), entry))
                     .thenReturn(Result.error(new RuntimeException("Simulating an error")));
 
@@ -221,7 +225,7 @@ class BookControllerTest {
                     .andExpect(jsonPath("message", is("Encountered an unexpected error (java.lang.RuntimeException: Simulating an error)")));
         }
 
-        private ResultActions makeSaveEntryRequest(final Map<String, Object> parameters, Chapter.Entry entry) throws Exception {
+        private ResultActions makeSaveEntryRequest(final Map<String, Object> parameters, Entry entry) throws Exception {
             return mockMvc.perform(put("/api/entry", parameters, entry));
         }
     }
@@ -354,11 +358,11 @@ class BookControllerTest {
         }
     }
 
-    private static Chapter.Entry createEntry() {
+    private static Entry createEntry() {
         return createEntryBuilder().build();
     }
 
-    private static Chapter.Entry.EntryBuilder createEntryBuilder() {
-        return Chapter.Entry.builder().id(UUID.randomUUID()).type("markdown");
+    private static Entry.EntryBuilder createEntryBuilder() {
+        return Entry.builder().id(UUID.randomUUID()).type("markdown");
     }
 }

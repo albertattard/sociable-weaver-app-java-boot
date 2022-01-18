@@ -44,7 +44,7 @@ class SaveEntryFunctionalTest {
                 URLEncoder.encode(bookPath.toString(), StandardCharsets.UTF_8),
                 URLEncoder.encode(chapterPath.toString(), StandardCharsets.UTF_8));
 
-        final Chapter.Entry entry = Chapter.Entry.builder()
+        final Entry entry = Entry.builder()
                 .id(UUID.fromString("8c579296-5e56-4d41-ac74-8270432f5021"))
                 .type("command")
                 .commandTimeout(Duration.ofSeconds(300))

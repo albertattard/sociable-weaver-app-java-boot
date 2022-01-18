@@ -4,9 +4,17 @@ import aa.sw.common.CustomPrettyPrinter;
 import aa.sw.common.Result;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
@@ -26,8 +34,20 @@ public class BookData {
     public Result<Book> readBook(final Path path) {
         requireNonNull(path);
 
-        return read(path, Book.class)
-                .then(book -> book.withBookPath(path));
+        return read(path, BookFile.class)
+                .then(a -> {
+                    final Book.BookBuilder builder = Book.builder()
+                            .title(a.getTitle())
+                            .description(a.getDescription())
+                            .bookPath(path);
+
+                    for (final String b : a.getChapters()) {
+                        final Result<Chapter> c = readChapter(path.resolve(b));
+                        builder.chapter(c.value());
+                    }
+
+                    return builder.build();
+                });
     }
 
     public Result<Chapter> readChapter(final Path path) {
@@ -53,4 +73,44 @@ public class BookData {
             return reader.readValue(path.toFile(), type);
         });
     }
+
+    @Value
+    @Builder(toBuilder = true)
+    @JsonDeserialize(builder = BookFile.BookFileBuilder.class)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    private static class BookFile {
+
+        String title;
+        String description;
+        List<String> chapters;
+
+        @JsonPOJOBuilder(withPrefix = "")
+        public static class BookFileBuilder {
+            private final List<String> chapters = new ArrayList<>();
+
+            public BookFileBuilder chapter(final String path) {
+                requireNonNull(path);
+
+                chapters.add(path);
+                return this;
+            }
+
+            public BookFileBuilder chapters(final List<String> chapters) {
+                requireNonNull(chapters);
+
+                this.chapters.clear();
+                this.chapters.addAll(chapters);
+                return this;
+            }
+
+            public BookFile build() {
+                return new BookFile(
+                        requireNonNull(title, "The book title cannot be null"),
+                        requireNonNull(description, "The book description cannot be null"),
+                        List.copyOf(chapters)
+                );
+            }
+        }
+    }
+
 }

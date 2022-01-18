@@ -27,7 +27,7 @@ public class BookService {
         return data.readChapter(chapterPath.getPath());
     }
 
-    public Result<Chapter.Entry> saveEntry(final ChapterPath chapterPath, final Chapter.Entry entry) {
+    public Result<Entry> saveEntry(final ChapterPath chapterPath, final Entry entry) {
         requireNonNull(chapterPath);
         requireNonNull(entry);
 
@@ -40,7 +40,7 @@ public class BookService {
                         .orElseThrow(() -> new RuntimeException("The entry was not found in file after it was saved")));
     }
 
-    public Result<Chapter.Entry> createEntry(final ChapterPath chapterPath, final CreateEntry createEntry) {
+    public Result<Entry> createEntry(final ChapterPath chapterPath, final CreateEntry createEntry) {
         requireNonNull(chapterPath);
         requireNonNull(createEntry);
 
@@ -50,7 +50,7 @@ public class BookService {
         return readChapter(chapterPath)
                 .then(chapter -> indexOfEntryInChapter(createEntry.getAfterEntryWithId(), chapter))
                 .then(pair -> {
-                    final Chapter.Entry entry = Chapter.Entry
+                    final Entry entry = Entry
                             .builder()
                             .id(id)
                             .type(createEntry.getType())
@@ -64,7 +64,7 @@ public class BookService {
                         .orElseThrow(() -> new RuntimeException("The entry was not found in file after it was created")));
     }
 
-    public Result<Chapter.Entry> deleteEntry(final ChapterPath chapterPath, final UUID entryId) {
+    public Result<Entry> deleteEntry(final ChapterPath chapterPath, final UUID entryId) {
         requireNonNull(chapterPath);
         requireNonNull(entryId);
 

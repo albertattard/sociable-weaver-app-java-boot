@@ -1,7 +1,6 @@
 package aa.sw.book;
 
 import aa.sw.common.Pair;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.AccessLevel;
@@ -9,25 +8,57 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @JsonDeserialize(builder = Chapter.ChapterBuilder.class)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Chapter {
 
+    String chapterPath;
     List<Entry> entries;
+
+    public static Chapter of(final String chapterPath, final String title, final String description) {
+        requireNonNull(chapterPath);
+        requireNonNull(title);
+        requireNonNull(description);
+
+        return builder()
+                .chapterPath(chapterPath)
+                .entry(Entry.chapter(title, description))
+                .build();
+    }
+
+    public String getTitle() {
+        return x("chapter", "Title");
+    }
+
+    public String getDescription() {
+        return x("chapter", "Description");
+    }
+
+    private String x(final String type, final String part) {
+        return x(type, part, () -> "");
+    }
+
+    private String x(final String type, final String part, final Supplier<String> defaultValue) {
+        return entries.stream()
+                .filter(e -> type.equals(e.getType()))
+                .map(Entry::getMultipartParameters)
+                .flatMap(m -> m.getPart(part).stream())
+                .findFirst()
+                .orElseGet(defaultValue);
+    }
 
     public Optional<EntryIndex> findEntryWithId(final UUID id) {
         return findEntry(entry -> Objects.equals(id, entry.getId()));
@@ -56,7 +87,7 @@ public class Chapter {
 
         final List<Entry> updated = new ArrayList<>(entries);
         updated.set(index, entry);
-        return Chapter.ChapterBuilder.build(updated);
+        return withEntries(updated);
     }
 
     public Chapter insertEntryAt(final int index, final Entry entry) {
@@ -75,7 +106,8 @@ public class Chapter {
         final List<Entry> updated = new ArrayList<>(entries.size() - 1);
         if (isNotTheFirstEntry(index)) {updated.addAll(entries.subList(0, index));}
         if (isNotTheLastEntry(index)) {updated.addAll(entries.subList(index + 1, entries.size()));}
-        return Pair.of(ChapterBuilder.build(updated), entries.get(index));
+
+        return Pair.of(withEntries(updated), entries.get(index));
     }
 
     private boolean isNotTheFirstEntry(final int index) {
@@ -90,7 +122,7 @@ public class Chapter {
         final List<Entry> updated = new ArrayList<>(entries.size() + 1);
         updated.addAll(entries);
         updated.add(index, entry);
-        return ChapterBuilder.build(updated);
+        return withEntries(updated);
     }
 
     public <T> T map(final Function<Chapter, T> mapper) {
@@ -115,6 +147,12 @@ public class Chapter {
         }
     }
 
+    private Chapter withEntries(final List<Entry> entries) {
+        requireNonNull(entries);
+
+        return toBuilder().entries(entries).build();
+    }
+
     @JsonPOJOBuilder(withPrefix = "")
     public static class ChapterBuilder {
 
@@ -136,45 +174,15 @@ public class Chapter {
         }
 
         public Chapter build() {
-            return build(entries);
+            return build(chapterPath, entries);
         }
 
-        public static Chapter build(final List<Entry> entries) {
+        public static Chapter build(final String chapterPath, final List<Entry> entries) {
+            requireNonNull(chapterPath);
             requireNonNull(entries);
 
-            return new Chapter(List.copyOf(entries));
+            return new Chapter(chapterPath, List.copyOf(entries));
         }
-    }
-
-    @Value
-    @Builder(toBuilder = true)
-    @JsonDeserialize(builder = Entry.EntryBuilder.class)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class Entry {
-
-        String type;
-        UUID id;
-        String name;
-        String workingDirectory;
-        List<String> parameters;
-        List<String> variables;
-        List<String> environmentVariables;
-        Map<String, String> values;
-        Boolean ignoreErrors;
-        Boolean pushChanges;
-        Boolean dryRun;
-        Boolean sensitive;
-        Integer expectedExitValue;
-        Duration commandTimeout;
-
-        public <T> T map(final Function<Entry, T> mapper) {
-            requireNonNull(mapper);
-
-            return mapper.apply(this);
-        }
-
-        @JsonPOJOBuilder(withPrefix = "")
-        public static class EntryBuilder {}
     }
 
     @Value

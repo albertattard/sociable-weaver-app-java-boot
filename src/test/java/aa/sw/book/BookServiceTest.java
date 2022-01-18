@@ -76,7 +76,7 @@ class BookServiceTest {
             when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
 
             /* When */
-            final Result<Chapter.Entry> result = service.createEntry(chapterPath, entry);
+            final Result<Entry> result = service.createEntry(chapterPath, entry);
 
             /* Then */
             assertThat(result)
@@ -98,7 +98,7 @@ class BookServiceTest {
             );
 
             /* When */
-            final Result<Chapter.Entry> result = service.createEntry(chapterPath, entry);
+            final Result<Entry> result = service.createEntry(chapterPath, entry);
 
             /* Then */
             assertThat(result.isValuePresent()).isTrue();
@@ -112,14 +112,14 @@ class BookServiceTest {
         @Test
         void returnsErrorWhenEntryNotFoundInChapter() {
             /* Given */
-            final Chapter.Entry entry = Fixtures.PROLOGUE_ENTRY_2.toBuilder()
+            final Entry entry = Fixtures.PROLOGUE_ENTRY_2.toBuilder()
                     .id(UUID.randomUUID())
                     .build();
             final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
             when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
 
             /* When */
-            final Result<Chapter.Entry> result = service.saveEntry(chapterPath, entry);
+            final Result<Entry> result = service.saveEntry(chapterPath, entry);
 
             /* Then */
             assertThat(result)
@@ -129,7 +129,7 @@ class BookServiceTest {
         @Test
         void saveAndReturnTheWrittenEntry() throws Exception {
             /* Given */
-            final Chapter.Entry updatedEntry = Fixtures.PROLOGUE_ENTRY_2.toBuilder()
+            final Entry updatedEntry = Fixtures.PROLOGUE_ENTRY_2.toBuilder()
                     .parameters(List.of("I make mistakes, and I make more mistakes, and some more, and that's how I learn."))
                     .build();
             final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
@@ -139,7 +139,7 @@ class BookServiceTest {
             );
 
             /* When */
-            final Result<Chapter.Entry> result = service.saveEntry(chapterPath, updatedEntry);
+            final Result<Entry> result = service.saveEntry(chapterPath, updatedEntry);
 
             /* Then */
             assertThat(result)
@@ -158,7 +158,7 @@ class BookServiceTest {
             when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
 
             /* When */
-            final Result<Chapter.Entry> result = service.deleteEntry(chapterPath, entryId);
+            final Result<Entry> result = service.deleteEntry(chapterPath, entryId);
 
             /* Then */
             assertThat(result)
@@ -170,12 +170,12 @@ class BookServiceTest {
             /* Given */
             final UUID entryId = Fixtures.PROLOGUE_ENTRY_1.getId();
             final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
-            final Chapter writtenChapter = Chapter.builder().entry(Fixtures.PROLOGUE_ENTRY_2).build();
+            final Chapter writtenChapter = Chapter.builder().chapterPath("00-prologue.json").entry(Fixtures.PROLOGUE_ENTRY_2).build();
             when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
             when(data.writeChapter(eq(chapterPath.getPath()), eq(writtenChapter))).thenReturn(Result.value(writtenChapter));
 
             /* When */
-            final Result<Chapter.Entry> result = service.deleteEntry(chapterPath, entryId);
+            final Result<Entry> result = service.deleteEntry(chapterPath, entryId);
 
             /* Then */
             assertThat(result.isValuePresent()).isTrue();
@@ -187,12 +187,12 @@ class BookServiceTest {
             /* Given */
             final UUID entryId = Fixtures.PROLOGUE_ENTRY_2.getId();
             final ChapterPath chapterPath = Fixtures.PROLOGUE_CHAPTER_PATH;
-            final Chapter writtenChapter = Chapter.builder().entry(Fixtures.PROLOGUE_ENTRY_1).build();
+            final Chapter writtenChapter = Chapter.builder().chapterPath("00-prologue.json").entry(Fixtures.PROLOGUE_ENTRY_1).build();
             when(data.readChapter(eq(chapterPath.getPath()))).thenReturn(Result.value(Fixtures.PROLOGUE));
             when(data.writeChapter(eq(chapterPath.getPath()), eq(writtenChapter))).thenReturn(Result.value(writtenChapter));
 
             /* When */
-            final Result<Chapter.Entry> result = service.deleteEntry(chapterPath, entryId);
+            final Result<Entry> result = service.deleteEntry(chapterPath, entryId);
 
             /* Then */
             assertThat(result.isValuePresent()).isTrue();
