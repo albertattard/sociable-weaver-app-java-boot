@@ -12,66 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ChapterTest {
 
     @Nested
-    class TocTest {
-
-        @Test
-        void returnEmptyStringWhenTheChapterEntryIsNotThere() {
-            /* Given */
-            final Chapter chapter = Chapter.builder()
-                    .chapterPath("chapter-path")
-                    .build();
-
-            /* When */
-            final String title = chapter.getTitle();
-            final String description = chapter.getDescription();
-
-            /* Then */
-            assertThat(title).isEqualTo("");
-            assertThat(description).isEqualTo("");
-        }
-
-        @Test
-        void returnTheChapterTitleAndAnEmptyDescription() {
-            /* Given */
-            final Entry entry = Entry.builder()
-                    .type("chapter")
-                    .parameters(List.of("Title:1", "Title")).build();
-            final Chapter chapter = Chapter.builder()
-                    .chapterPath("chapter-path")
-                    .entry(entry)
-                    .build();
-
-            /* When */
-            final String title = chapter.getTitle();
-            final String description = chapter.getDescription();
-
-            /* Then */
-            assertThat(title).isEqualTo("Title");
-            assertThat(description).isEqualTo("");
-        }
-
-        @Test
-        void returnTheChapterTitleAndDescription() {
-            /* Given */
-            final Entry entry = Entry.builder()
-                    .type("chapter")
-                    .parameters(List.of("Title:1", "Title", "Description:2", "A long", "description")).build();
-            final Chapter chapter = Chapter.builder()
-                    .chapterPath("chapter-path")
-                    .entry(entry)
-                    .build();
-
-            /* When */
-            final String title = chapter.getTitle();
-            final String description = chapter.getDescription();
-
-            /* Then */
-            assertThat(title).isEqualTo("Title");
-            assertThat(description).isEqualTo("A long\ndescription");
-        }
-    }
-
-    @Nested
     class IndexOfTest {
 
         @Test

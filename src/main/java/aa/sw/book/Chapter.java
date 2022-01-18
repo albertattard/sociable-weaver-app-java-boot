@@ -39,28 +39,6 @@ public class Chapter {
                 .build();
     }
 
-    public String getTitle() {
-        return readMultiPartProperty("chapter", "Title");
-    }
-
-    public String getDescription() {
-        return readMultiPartProperty("chapter", "Description");
-    }
-
-    private String readMultiPartProperty(final String type, final String part) {
-        return readMultiPartProperty(type, part, () -> "");
-    }
-
-    private String readMultiPartProperty(final String type, final String part, final Supplier<String> defaultValue) {
-        return entries.stream()
-                .filter(entry -> type.equals(entry.getType()))
-                .map(Entry::getMultipartParameters)
-                .map(parameters -> parameters.getPart(part))
-                .map(parameters -> String.join("\n", parameters))
-                .findFirst()
-                .orElseGet(defaultValue);
-    }
-
     public Optional<EntryIndex> findEntryWithId(final UUID id) {
         return findEntry(entry -> Objects.equals(id, entry.getId()));
     }

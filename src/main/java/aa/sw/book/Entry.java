@@ -50,11 +50,6 @@ public class Entry {
         return mapper.apply(this);
     }
 
-    @JsonIgnore
-    public MultipartParameters getMultipartParameters() {
-        return MultipartParameters.of(parameters);
-    }
-
     @JsonPOJOBuilder(withPrefix = "")
     public static class EntryBuilder {}
 }

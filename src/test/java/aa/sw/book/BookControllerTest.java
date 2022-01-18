@@ -58,7 +58,6 @@ class BookControllerTest {
 
             /* Then */
             result.andExpect(status().isOk())
-                    .andDo(print())
                     .andExpect(jsonPath("title", is("Test Book")))
                     .andExpect(jsonPath("description", is("Test Description")))
                     .andExpect(jsonPath("chapters", hasSize(2)))
