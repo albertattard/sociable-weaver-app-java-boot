@@ -35,18 +35,26 @@ public class BookData {
         requireNonNull(path);
 
         return read(path, BookFile.class)
-                .then(a -> {
+                .flatThen(bookFile -> {
                     final Book.BookBuilder builder = Book.builder()
-                            .title(a.getTitle())
-                            .description(a.getDescription())
+                            .title(bookFile.getTitle())
+                            .description(bookFile.getDescription())
                             .bookPath(path);
 
-                    for (final String b : a.getChapters()) {
-                        final Result<Chapter> c = readChapter(path.resolve(b));
-                        builder.chapter(c.value());
+                    for (final String chapterPath : bookFile.getChapters()) {
+                        final Result<ChapterFile> result = read(path.resolveSibling(chapterPath), ChapterFile.class);
+                        if (!result.isValuePresent()) {
+                            return Result.error(result.error());
+                        }
+
+                        final Chapter chapter = Chapter.builder()
+                                .chapterPath(chapterPath)
+                                .entries(result.value().getEntries())
+                                .build();
+                        builder.chapter(chapter);
                     }
 
-                    return builder.build();
+                    return Result.value(builder.build());
                 });
     }
 
@@ -75,7 +83,7 @@ public class BookData {
     }
 
     @Value
-    @Builder(toBuilder = true)
+    @Builder
     @JsonDeserialize(builder = BookFile.BookFileBuilder.class)
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     private static class BookFile {
@@ -113,4 +121,36 @@ public class BookData {
         }
     }
 
+    @Value
+    @Builder
+    @JsonDeserialize(builder = ChapterFile.ChapterFileBuilder.class)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class ChapterFile {
+        List<Entry> entries;
+
+        @JsonPOJOBuilder(withPrefix = "")
+        public static class ChapterFileBuilder {
+
+            private final List<Entry> entries = new ArrayList<>();
+
+            public ChapterFileBuilder entry(final Entry entry) {
+                requireNonNull(entry);
+
+                entries.add(entry);
+                return this;
+            }
+
+            public ChapterFileBuilder entries(final List<Entry> entries) {
+                requireNonNull(entries);
+
+                this.entries.clear();
+                this.entries.addAll(entries);
+                return this;
+            }
+
+            public ChapterFile build() {
+                return new ChapterFile(List.copyOf(entries));
+            }
+        }
+    }
 }

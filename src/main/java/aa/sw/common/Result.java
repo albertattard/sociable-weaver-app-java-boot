@@ -19,6 +19,7 @@ public class Result<T> {
         try {
             return value(supplier.get());
         } catch (final Exception e) {
+            e.printStackTrace();
             return error(e);
         }
     }
@@ -43,8 +44,16 @@ public class Result<T> {
         return map(Function.identity(), Result::valueNotSet);
     }
 
+    public Exception error() {
+        return map(Result.errorNotSet(), Function.identity());
+    }
+
     private static <E> E valueNotSet(final Throwable e) {
         throw new IllegalStateException("Value is not set", e);
+    }
+
+    private static <E> E errorNotSet() {
+        throw new IllegalStateException("Error is not set");
     }
 
     public <V> V map(final Function<T, V> valueMapper, final Function<Exception, V> errorMapper) {
