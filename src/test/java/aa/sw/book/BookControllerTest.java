@@ -109,65 +109,6 @@ class BookControllerTest {
     }
 
     @Nested
-    class ReadChapterTest {
-
-        @Test
-        void returnChapterWhenExistsAndValid() throws Exception {
-            /* Given */
-            final Path bookPath = Path.of("path-to-book");
-            final Path chapterPath = Path.of("path-to-chapter-1");
-            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            final Chapter chapter = Fixtures.PROLOGUE;
-            when(service.readChapter(ChapterPath.of(bookPath, chapterPath))).thenReturn(Result.value(chapter));
-
-            /* When */
-            final ResultActions result = makeReadChapterRequest(params);
-
-            /* Then */
-            result.andExpect(status().isOk())
-                    .andExpect(jsonPath("entries", hasSize(2)));
-        }
-
-        @Test
-        void returnClientErrorWhenChapterDoesNotExists() throws Exception {
-            /* Given */
-            final Path bookPath = Path.of("path-to-book");
-            final Path chapterPath = Path.of("path-to-chapter-1");
-            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            when(service.readChapter(ChapterPath.of(bookPath, chapterPath)))
-                    .thenReturn(Result.error(new FileNotFoundException("Simulating an error")));
-
-            /* When */
-            final ResultActions result = makeReadChapterRequest(params);
-
-            /* Then */
-            result.andExpect(status().isUnprocessableEntity())
-                    .andExpect(jsonPath("message", is("Chapter not found")));
-        }
-
-        @Test
-        void returnClientErrorWhenAnUnexpectedErrorOccurs() throws Exception {
-            /* Given */
-            final Path bookPath = Path.of("path-to-book");
-            final Path chapterPath = Path.of("path-to-chapter-1");
-            final Map<String, Object> params = Map.of("bookPath", bookPath, "chapterPath", chapterPath);
-            when(service.readChapter(ChapterPath.of(bookPath, chapterPath)))
-                    .thenReturn(Result.error(new RuntimeException("Simulating an error")));
-
-            /* When */
-            final ResultActions result = makeReadChapterRequest(params);
-
-            /* Then */
-            result.andExpect(status().isUnprocessableEntity())
-                    .andExpect(jsonPath("message", is("Encountered an unexpected error (java.lang.RuntimeException: Simulating an error)")));
-        }
-
-        private ResultActions makeReadChapterRequest(final Map<String, Object> params) throws Exception {
-            return mockMvc.perform(get("/api/chapter", params));
-        }
-    }
-
-    @Nested
     class SaveEntryTest {
 
         @Test

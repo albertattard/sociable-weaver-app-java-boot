@@ -31,13 +31,6 @@ public class BookController {
                 .map(ResponseEntity::ok, BookController::createBookErrorResponse);
     }
 
-    @GetMapping("/chapter")
-    public ResponseEntity<?> readChapter(@RequestParam("bookPath") final Path bookPath,
-                                         @RequestParam("chapterPath") final Path chapterPath) {
-        return service.readChapter(ChapterPath.of(bookPath, chapterPath))
-                .map(ResponseEntity::ok, BookController::createChapterErrorResponse);
-    }
-
     @PostMapping("/entry")
     public ResponseEntity<?> createEntry(@RequestParam("bookPath") final Path bookPath,
                                          @RequestParam("chapterPath") final Path chapterPath,

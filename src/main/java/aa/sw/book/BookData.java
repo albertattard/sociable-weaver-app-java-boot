@@ -61,14 +61,23 @@ public class BookData {
     public Result<Chapter> readChapter(final Path path) {
         requireNonNull(path);
 
-        return read(path, Chapter.class);
+        return read(path, ChapterFile.class)
+                .then(f -> Chapter.builder()
+                        /* TODO: This is wrong */
+                        .chapterPath(path.getFileName().toString())
+                        .entries(f.entries)
+                        .build());
     }
 
     public Result<Chapter> writeChapter(final Path path, final Chapter chapter) {
         requireNonNull(path);
         requireNonNull(chapter);
 
-        return write(path, Chapter.class, chapter);
+        return write(path, ChapterFile.class, ChapterFile.of(chapter))
+                .then(f -> Chapter.builder()
+                        .chapterPath(chapter.getChapterPath())
+                        .entries(f.entries)
+                        .build());
     }
 
     private <T> Result<T> read(final Path path, final Class<T> type) {
@@ -127,6 +136,12 @@ public class BookData {
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class ChapterFile {
         List<Entry> entries;
+
+        public static ChapterFile of(final Chapter chapter) {
+            requireNonNull(chapter);
+
+            return builder().entries(chapter.getEntries()).build();
+        }
 
         @JsonPOJOBuilder(withPrefix = "")
         public static class ChapterFileBuilder {
