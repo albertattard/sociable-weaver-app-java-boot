@@ -123,6 +123,6 @@ public class CommandScript {
     }
 
     private static void deleteFile(final Path path) {
-        // quietIo(() -> Files.deleteIfExists(path));
+        quietIo(() -> Files.deleteIfExists(path));
     }
 }

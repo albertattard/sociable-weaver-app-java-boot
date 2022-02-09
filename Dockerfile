@@ -48,4 +48,4 @@ COPY --from=layertools /opt/app/spring-boot-loader ./
 COPY --from=layertools /opt/app/snapshot-dependencies ./
 COPY --from=layertools /opt/app/application ./
 EXPOSE 8077
-ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher", "-Djdk.lang.Process.launchMechanism=vfork"]
