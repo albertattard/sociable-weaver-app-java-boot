@@ -83,7 +83,7 @@ public class CommandScript {
             }
         } catch (final RuntimeException e) {
             /* Delete the file if an error occurs while creating it */
-            quietIo(() -> Files.deleteIfExists(path));
+            deleteFile(path);
             throw e;
         }
 
@@ -111,7 +111,7 @@ public class CommandScript {
             try {
                 return mapper.apply(path);
             } finally {
-                quietIo(() -> Files.deleteIfExists(path));
+                deleteFile(path);
             }
         }
 
@@ -120,5 +120,9 @@ public class CommandScript {
                 throw new IllegalStateException("The file does not exists");
             }
         }
+    }
+
+    private static void deleteFile(final Path path) {
+        // quietIo(() -> Files.deleteIfExists(path));
     }
 }
